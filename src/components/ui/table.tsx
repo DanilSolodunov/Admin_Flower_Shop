@@ -1,66 +1,89 @@
-// src/components/ui/table.tsx
 import React from "react";
 import clsx from "clsx";
 
-// ============================
-// Основная таблица
-// ============================
+type TableTheme = "dark" | "light";
+
 interface TableProps {
   children: React.ReactNode;
   className?: string;
+  theme?: TableTheme;
 }
 
-export const Table = ({ children, className }: TableProps) => {
+export const Table = ({
+  children,
+  className,
+  theme = "dark",
+}: TableProps) => {
+  const isDark = theme === "dark";
+
   return (
-    <table
+    <div
       className={clsx(
-        "min-w-full border-collapse border border-slate-200 bg-white text-slate-900",
+        "w-full overflow-hidden rounded-2xl border",
+        isDark
+          ? "bg-slate-800 border-slate-700"
+          : "bg-white border-slate-200"
+      )}
+    >
+      <table
+        className={clsx(
+          "min-w-full border-collapse text-sm",
+          isDark ? "text-slate-200" : "text-slate-700",
+          className
+        )}
+      >
+        {children}
+      </table>
+    </div>
+  );
+};
+
+interface SectionProps {
+  children: React.ReactNode;
+  className?: string;
+  theme?: TableTheme;
+}
+
+export const TableHeader = ({
+  children,
+  className,
+  theme = "dark",
+}: SectionProps) => {
+  const isDark = theme === "dark";
+
+  return (
+    <thead
+      className={clsx(
+        "border-b",
+        isDark
+          ? "bg-slate-800 border-slate-700"
+          : "bg-slate-50 border-slate-200",
         className
       )}
     >
       {children}
-    </table>
+    </thead>
   );
 };
 
-// ============================
-// Заголовок таблицы
-// ============================
-export const TableHeader = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return <thead className={clsx("bg-slate-50", className)}>{children}</thead>;
-};
-
-// ============================
-// Тело таблицы
-// ============================
-export const TableBody = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const TableBody = ({ children }: { children: React.ReactNode }) => {
   return <tbody>{children}</tbody>;
 };
 
-// ============================
-// Строка таблицы
-// ============================
 export const TableRow = ({
   children,
   className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
+  theme = "dark",
+}: SectionProps) => {
+  const isDark = theme === "dark";
+
   return (
     <tr
       className={clsx(
-        "border-b border-slate-200 hover:bg-slate-50 transition-colors",
+        "border-b transition-colors",
+        isDark
+          ? "border-slate-700 hover:bg-slate-700/40"
+          : "border-slate-200 hover:bg-slate-50",
         className
       )}
     >
@@ -69,17 +92,23 @@ export const TableRow = ({
   );
 };
 
-// ============================
-// Ячейка таблицы
-// ============================
 export const TableCell = ({
   children,
   className,
+  theme = "dark",
   ...props
-}: React.TdHTMLAttributes<HTMLTableCellElement>) => {
+}: React.TdHTMLAttributes<HTMLTableCellElement> & {
+  theme?: TableTheme;
+}) => {
+  const isDark = theme === "dark";
+
   return (
     <td
-      className={clsx("px-4 py-3 text-sm text-slate-700", className)}
+      className={clsx(
+        "px-6 py-4",
+        isDark ? "text-slate-200" : "text-slate-700",
+        className
+      )}
       {...props}
     >
       {children}
@@ -87,18 +116,21 @@ export const TableCell = ({
   );
 };
 
-// ============================
-// Заголовочная ячейка
-// ============================
 export const TableHead = ({
   children,
   className,
+  theme = "dark",
   ...props
-}: React.ThHTMLAttributes<HTMLTableCellElement>) => {
+}: React.ThHTMLAttributes<HTMLTableCellElement> & {
+  theme?: TableTheme;
+}) => {
+  const isDark = theme === "dark";
+
   return (
     <th
       className={clsx(
-        "px-4 py-3 text-left text-sm font-semibold text-slate-700",
+        "px-6 py-4 text-left font-semibold tracking-wide",
+        isDark ? "text-slate-300" : "text-slate-700",
         className
       )}
       {...props}

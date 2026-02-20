@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Courier } from '../../types/Courier';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Table } from '../ui/table';
+import { Label } from '../ui/label';
 import {
   Select,
   SelectContent,
@@ -59,7 +59,7 @@ export function CourierForm({ courier, onSave, onCancel }: CourierFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div className="space-y-2">
-          <Table htmlFor="name">Имя курьера *</Table>
+          <Label htmlFor="name">Имя курьера *</Label>
           <Input
             id="name"
             value={name}
@@ -71,7 +71,7 @@ export function CourierForm({ courier, onSave, onCancel }: CourierFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Table htmlFor="phone">Телефон *</Table>
+          <Label htmlFor="phone">Телефон *</Label>
           <Input
             id="phone"
             value={phone}
@@ -83,7 +83,7 @@ export function CourierForm({ courier, onSave, onCancel }: CourierFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Table htmlFor="status">Статус</Table>
+          <Label htmlFor="status">Статус</Label>
           <Select value={status} onValueChange={(value: 'active' | 'inactive') => setStatus(value)}>
             <SelectTrigger id="status">
               <SelectValue />

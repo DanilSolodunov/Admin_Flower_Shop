@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Order } from '../../types/Order';
 import { Button } from '../ui/button';
-import { Table } from '../ui/table';
+import { Label } from '../ui/label';
 import {
   Select,
   SelectContent,
@@ -70,7 +70,7 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
       <div className="space-y-4">
         {/* Причина закрытия */}
         <div className="space-y-2">
-          <Table htmlFor="reason">Причина закрытия заказа *</Table>
+          <Label htmlFor="reason">Причина закрытия заказа *</Label>
           <Select value={reason} onValueChange={setReason}>
             <SelectTrigger id="reason" className={errors.reason ? 'border-red-500' : ''}>
               <SelectValue placeholder="Выберите причину" />
@@ -88,7 +88,7 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
 
         {/* Статус заказа */}
         <div className="space-y-2">
-          <Table htmlFor="status">Статус заказа *</Table>
+          <Label htmlFor="status">Статус заказа *</Label>
           <Select value={status} onValueChange={(value: Order['status']) => setStatus(value)}>
             <SelectTrigger id="status" className={errors.status ? 'border-red-500' : ''}>
               <SelectValue />
@@ -106,7 +106,7 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
 
         {/* Способ оплаты */}
         <div className="space-y-3">
-          <Table>Способ оплаты *</Table>
+          <Label>Способ оплаты *</Label>
           <RadioGroup 
             value={paymentMethod} 
             onValueChange={(value: 'наличный расчет' | 'online') => setPaymentMethod(value)}
@@ -114,15 +114,15 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
           >
             <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
               <RadioGroupItem value="наличный расчет" id="cash" />
-              <Table htmlFor="cash" className="flex-1 cursor-pointer font-normal">
+              <Label htmlFor="cash" className="flex-1 cursor-pointer font-normal">
                 Наличный расчет
-              </Table>
+              </Label>
             </div>
             <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
               <RadioGroupItem value="online" id="online" />
-              <Table htmlFor="online" className="flex-1 cursor-pointer font-normal">
+              <Label htmlFor="online" className="flex-1 cursor-pointer font-normal">
                 Онлайн оплата
-              </Table>
+              </Label>
             </div>
           </RadioGroup>
           {errors.paymentMethod && <p className="text-sm text-red-500">{errors.paymentMethod}</p>}
@@ -130,7 +130,7 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
 
         {/* Курьер (оставляем для удобства) */}
         <div className="space-y-2">
-          <Table htmlFor="courier">Курьер</Table>
+          <Label htmlFor="courier">Курьер</Label>
           <Select value={courier} onValueChange={setCourier}>
             <SelectTrigger id="courier">
               <SelectValue />

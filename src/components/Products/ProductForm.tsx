@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Product } from '../../types/Product';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Table } from '../ui/table';
+import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { Upload } from 'lucide-react';
@@ -74,7 +74,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Table htmlFor="imageurl">Изображение *</Table>
+        <Label htmlFor="imageurl">Изображение *</Label>
         <Button
           type="button"
           variant="outline"
@@ -107,7 +107,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Table htmlFor="description">Описание *</Table>
+        <Label htmlFor="description">Описание *</Label>
         <Textarea
           id="description"
           value={formData.description}
@@ -123,7 +123,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Table htmlFor="price">Цена (₽) *</Table>
+          <Label htmlFor="price">Цена (₽) *</Label>
           <Input
             id="price"
             type="number"
@@ -140,7 +140,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Table htmlFor="amount">Количество *</Table>
+          <Label htmlFor="amount">Количество *</Label>
           <Input
             id="amount"
             type="number"
@@ -174,7 +174,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Table htmlFor="imageUrlInput">URL изображения</Table>
+              <Label htmlFor="imageUrlInput">URL изображения</Label>
               <Input
                 id="imageUrlInput"
                 value={tempImageUrl}

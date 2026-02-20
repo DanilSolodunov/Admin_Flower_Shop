@@ -17,6 +17,7 @@ import { CourierForm } from './components/Couriers/CourierForm';
 import { SettingsForm } from './components/Settings/SettingsForm';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
+import { SidebarToggle } from './components/Layout/SidebarToggle';
 
 // Начальные данные
 const initialProducts: Product[] = [
@@ -58,6 +59,8 @@ export default function App() {
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
 
   // Users State
   const [users, setUsers] = useState<User[]>(() => {
@@ -289,23 +292,41 @@ export default function App() {
   if (!isAuthenticated) {
     return <LoginForm onLogin={handleLogin} onRegister={handleRegister} />;
   }
-
   return (
-    // <div className="flex h-screen bg-slate-50">
-    <div className="flex h-screen bg-gray-600">
-    {/* // <main className="flex-1 overflow-auto p-6 bg-slate-100"> */}
-    {/* <main className="flex-1 overflow-auto p-6 bg-slate-100"> */}
+  <div className="h-screen bg-gray-600 relative overflow-hidden">
+    {/* Узкая вертикальная панель */}
+    <SidebarToggle onClick={() => setSidebarOpen(true)} />
 
-
-
-      <Sidebar 
-        currentView={currentView} 
-        onViewChange={setCurrentView} 
+    {/* Overlay */}
+    {isSidebarOpen && (
+      <div
+        className="fixed inset-0 bg-black/40 z-40"
+        onClick={() => setSidebarOpen(false)}
       />
+    )}
 
+    {/* Выезжающий Sidebar */}
+    <div
+      className={`
+        fixed top-0 left-0 h-full w-64 bg-slate-800 z-50
+        transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}
+    >
+      <Sidebar
+        currentView={currentView}
+        onViewChange={(view) => {
+          setCurrentView(view);
+          setSidebarOpen(false);
+        }}
+      />
+    </div>
+
+    {/* Основной контейнер */}
+    <div className="flex h-full ml-12">
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          username={currentUser?.name || currentUser?.username || 'Admin'} 
+        <Header
+          username={currentUser?.name || currentUser?.username || 'Admin'}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
@@ -313,8 +334,10 @@ export default function App() {
           {currentView === 'products' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-slate-100">Управление товарами</h1>
-                <Button 
+                <h1 className="text-2xl font-bold text-white">
+                  Управление товарами
+                </h1>
+                <Button
                   onClick={() => {
                     setEditingProduct(undefined);
                     setIsProductFormOpen(true);
@@ -324,6 +347,7 @@ export default function App() {
                   Добавить товар
                 </Button>
               </div>
+
               <ProductTable
                 products={products}
                 onEdit={handleEditProduct}
@@ -334,9 +358,10 @@ export default function App() {
 
           {currentView === 'new_orders' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-slate-100">Новые заказы</h1>
-              </div>
+              <h1 className="text-2xl font-bold text-white">
+                Новые заказы
+              </h1>
+
               <OrderTable
                 orders={activeOrders}
                 onCloseOrder={handleCloseOrderClick}
@@ -348,9 +373,10 @@ export default function App() {
 
           {currentView === 'completed_orders' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-slate-100">Завершенные заказы</h1>
-              </div>
+              <h1 className="text-2xl font-bold text-white">
+                Завершенные заказы
+              </h1>
+
               <OrderTable
                 orders={completedOrders}
                 onCloseOrder={handleCloseOrderClick}
@@ -362,7 +388,10 @@ export default function App() {
 
           {currentView === 'couriers' && (
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-slate-100">Управление курьерами</h1>
+              <h1 className="text-2xl font-bold text-white">
+                Управление курьерами
+              </h1>
+
               <CourierList
                 couriers={couriers}
                 onEdit={handleEditCourier}
@@ -377,12 +406,16 @@ export default function App() {
 
           {currentView === 'reports' && (
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-slate-100">Финансовые отчеты</h1>
+              <h1 className="text-2xl font-bold text-white">
+                Финансовые отчеты
+              </h1>
+
               <RevenueReport orders={orders} />
             </div>
           )}
         </main>
       </div>
+    </div>
 
       {/* Dialogs */}
       <Dialog open={isProductFormOpen} onOpenChange={setIsProductFormOpen}>

@@ -53,98 +53,117 @@ export function OrderTable({ orders, onCloseOrder, onViewOrder, showActions = tr
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Фильтр показываем только если есть заказы и это не "Завершенные заказы" (опционально, но оставим для гибкости) */}
-      {showActions && (
-        <div className="flex justify-end">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Фильтр по статусу" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все статусы</SelectItem>
-              <SelectItem value="ожидает">Ожидает</SelectItem>
-              <SelectItem value="собирается">Собирается</SelectItem>
-              <SelectItem value="отправлен">Отправлен</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <Table>
-          <TableHead>
-            <TableRow className="bg-slate-50 hover:bg-slate-50 border-b border-slate-200">
-              <TableHead className="font-semibold text-slate-700">ID</TableHead>
-              <TableHead className="font-semibold text-slate-700">Дата</TableHead>
-              <TableHead className="font-semibold text-slate-700">Сумма</TableHead>
-              <TableHead className="font-semibold text-slate-700">Статус</TableHead>
-              <TableHead className="font-semibold text-slate-700">Курьер</TableHead>
+  return (
+  <div className="space-y-6">
+    {showActions && (
+      <div className="flex justify-end">
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-56 bg-slate-800 border-slate-700 text-slate-200">
+            <SelectValue placeholder="Фильтр по статусу" />
+          </SelectTrigger>
+          <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+            <SelectItem value="all">Все статусы</SelectItem>
+            <SelectItem value="ожидает">Ожидает</SelectItem>
+            <SelectItem value="собирается">Собирается</SelectItem>
+            <SelectItem value="отправлен">Отправлен</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    )}
+
+    <Table theme="dark">
+      <TableHeader theme="dark">
+        <TableRow theme="dark">
+          <TableHead theme="dark">ID</TableHead>
+          <TableHead theme="dark">Дата</TableHead>
+          <TableHead theme="dark">Сумма</TableHead>
+          <TableHead theme="dark">Статус</TableHead>
+          <TableHead theme="dark">Курьер</TableHead>
+          {showActions && (
+            <TableHead theme="dark" className="text-right">
+              Действия
+            </TableHead>
+          )}
+        </TableRow>
+      </TableHeader>
+
+      <TableBody>
+        {filteredOrders.length === 0 ? (
+          <TableRow theme="dark">
+            <TableCell
+              theme="dark"
+              colSpan={showActions ? 6 : 5}
+              className="text-center py-14 text-slate-400"
+            >
+              <div className="flex flex-col items-center gap-3">
+                <XCircle className="w-12 h-12 opacity-40" />
+                <p className="text-lg font-medium">Нет заказов</p>
+                <p className="text-sm opacity-60">
+                  В этой категории пока нет заказов
+                </p>
+              </div>
+            </TableCell>
+          </TableRow>
+        ) : (
+          filteredOrders.map((order) => (
+            <TableRow key={order.id} theme="dark">
+              <TableCell theme="dark" className="font-medium">
+                {order.id}
+              </TableCell>
+
+              <TableCell theme="dark" className="text-slate-400">
+                {new Date(order.date).toLocaleDateString("ru-RU")}
+              </TableCell>
+
+              <TableCell theme="dark" className="font-semibold">
+                {order.total.toLocaleString("ru-RU")} ₽
+              </TableCell>
+
+              <TableCell theme="dark">
+                <Badge
+                  className="bg-slate-700 text-white border border-slate-600 px-3 py-1 rounded-full"
+                  variant="secondary"
+                >
+                  {order.status.charAt(0).toUpperCase() +
+                    order.status.slice(1)}
+                </Badge>
+              </TableCell>
+
+              <TableCell theme="dark" className="text-slate-400">
+                {order.courier || "—"}
+              </TableCell>
+
               {showActions && (
-                <TableHead className="text-right font-semibold text-slate-700">Действия</TableHead>
-              )}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredOrders.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={showActions ? 6 : 5} className="text-center text-slate-500 py-12">
-                  <div className="flex flex-col items-center gap-2">
-                    <XCircle className="w-12 h-12 text-slate-300" />
-                    <p className="text-lg font-medium">Нет заказов</p>
-                    <p className="text-sm">В этой категории пока нет заказов</p>
+                <TableCell theme="dark" className="text-right">
+                  <div className="flex justify-end gap-3">
+                    <Button
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3"
+                      onClick={() => onViewOrder(order)}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+
+                    {["ожидает", "собирается", "отправлен"].includes(
+                      order.status
+                    ) && (
+                      <Button
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3"
+                        onClick={() => onCloseOrder(order)}
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
-              </TableRow>
-            ) : (
-              filteredOrders.map((order) => (
-                <TableRow key={order.id} className="hover:bg-slate-50/50 border-b border-slate-100">
-                  <TableCell className="font-medium text-slate-900">{order.id}</TableCell>
-                  <TableCell className="text-slate-600">
-                    {new Date(order.date).toLocaleDateString('ru-RU')}
-                  </TableCell>
-                  <TableCell className="font-semibold text-slate-900">
-                    {order.total.toLocaleString('ru-RU')} ₽
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(order.status)} variant="secondary">
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-slate-600">
-                    {order.courier || '—'}
-                  </TableCell>
-                  {showActions && (
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-                          onClick={() => onViewOrder(order)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        {['ожидает', 'собирается', 'отправлен'].includes(order.status) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-slate-600 hover:text-green-600 hover:bg-green-50"
-                            onClick={() => onCloseOrder(order)}
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  );
+              )}
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  </div>
+);
 }

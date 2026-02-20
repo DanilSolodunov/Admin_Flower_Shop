@@ -24,8 +24,8 @@ export function CourierList({ couriers, onEdit, onDelete, onAdd }: CourierListPr
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Список курьеров</h2>
-          <p className="text-sm text-slate-500">Управление персоналом доставки</p>
+          <h2 className="text-lg font-semibold text-white">Список курьеров</h2>
+          <p className="text-sm text-slate-200">Управление персоналом доставки</p>
         </div>
         <Button 
           onClick={onAdd}
@@ -35,20 +35,20 @@ export function CourierList({ couriers, onEdit, onDelete, onAdd }: CourierListPr
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-900 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 hover:bg-slate-50 border-b border-slate-200">
-              <TableHead className="font-semibold text-slate-700">Имя</TableHead>
-              <TableHead className="font-semibold text-slate-700">Телефон</TableHead>
-              <TableHead className="font-semibold text-slate-700">Статус</TableHead>
-              <TableHead className="text-right font-semibold text-slate-700">Действия</TableHead>
+            <TableRow className="bg-gray-800 hover:bg-slate-50 border-b border-gray-900">
+              <TableHead className="font-semibold text-white">Имя</TableHead>
+              <TableHead className="font-semibold text-white">Телефон</TableHead>
+              <TableHead className="font-semibold text-white">Статус</TableHead>
+              <TableHead className="text-right font-semibold text-white">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {couriers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-slate-500 py-12">
+                <TableCell colSpan={4} className="text-center text-slate-200 py-12">
                   <div className="flex flex-col items-center gap-2">
                     <User className="w-12 h-12 text-slate-300" />
                     <p className="text-lg font-medium">Нет курьеров</p>
@@ -59,7 +59,7 @@ export function CourierList({ couriers, onEdit, onDelete, onAdd }: CourierListPr
             ) : (
               couriers.map((courier) => (
                 <TableRow key={courier.id} className="hover:bg-slate-50/50 border-b border-slate-100">
-                  <TableCell className="font-medium text-slate-900">
+                  <TableCell className="font-medium text-white">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                         <User className="w-4 h-4" />
@@ -67,7 +67,7 @@ export function CourierList({ couriers, onEdit, onDelete, onAdd }: CourierListPr
                       {courier.name}
                     </div>
                   </TableCell>
-                  <TableCell className="text-slate-600">
+                  <TableCell className="text-white">
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-slate-400" />
                       {courier.phone}
@@ -89,7 +89,7 @@ export function CourierList({ couriers, onEdit, onDelete, onAdd }: CourierListPr
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                        className="text-slate-200 hover:text-blue-600 hover:bg-blue-50"
                         onClick={() => onEdit(courier)}
                       >
                         <Edit className="w-4 h-4" />

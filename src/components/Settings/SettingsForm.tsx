@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { User } from '../../types/User';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Table } from '../ui/table';
+import { Label } from '../ui/label';
 import { Trash2 } from 'lucide-react';
 
 interface SettingsFormProps {
@@ -47,7 +47,7 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel }: SettingsFor
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Table htmlFor="name">Имя (отображаемое)</Table>
+          <Label htmlFor="name">Имя (отображаемое)</Label>
           <Input
             id="name"
             value={formData.name}
@@ -58,7 +58,7 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel }: SettingsFor
         </div>
 
         <div className="space-y-2">
-          <Table htmlFor="username">Логин</Table>
+          <Label htmlFor="username">Логин</Label>
           <Input
             id="username"
             value={formData.username}
@@ -69,7 +69,7 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel }: SettingsFor
         </div>
 
         <div className="space-y-2">
-          <Table htmlFor="password">Новый пароль (оставьте пустым, чтобы не менять)</Table>
+          <Label htmlFor="password">Новый пароль (оставьте пустым, чтобы не менять)</Label>
           <Input
             id="password"
             type="password"
