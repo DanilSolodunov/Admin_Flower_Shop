@@ -1,17 +1,19 @@
 import { useState, useMemo } from 'react';
-import { OrderTable } from './OrderTable';
 import { Order } from '../../types/Order';
+import { OrderTable } from './OrderTable';
+import { OrderFilters, filterOrders, OrdersViewType } from './OrderFilters';
 
 interface OrdersPageProps {
-  status: 'new' | 'completed';
+  statusView: OrdersViewType;
 }
 
-export function OrdersPage({ status }: OrdersPageProps) {
+export function OrdersPage({ statusView }: OrdersPageProps) {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('Все');
 
   const filteredOrders = useMemo(() => {
-    return orders.filter(order => order.status === status);
-  }, [orders, status]);
+    return filterOrders(orders, statusView, statusFilter);
+  }, [orders, statusView, statusFilter]);
 
   const handleEdit = (order: Order) => {
     console.log('edit order', order);
@@ -21,11 +23,28 @@ export function OrdersPage({ status }: OrdersPageProps) {
     console.log('delete order', id);
   };
 
+  const handleCloseOrder = (order: Order) => {
+    console.log('close order', order);
+  };
+
+  const handleViewOrder = (order: Order) => {
+    console.log('view order', order);
+  };
+
   return (
-    <OrderTable
-      orders={filteredOrders}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-    />
+    <div className="space-y-4">
+      <OrderFilters
+        filter={statusFilter}
+        onFilterChange={setStatusFilter}
+      />
+
+      <OrderTable
+        orders={filteredOrders}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onCloseOrder={handleCloseOrder}
+        onViewOrder={handleViewOrder}
+      />
+    </div>
   );
 }

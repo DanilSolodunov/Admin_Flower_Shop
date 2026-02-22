@@ -21,7 +21,7 @@ interface CourierFormProps {
 export function CourierForm({ courier, onSave, onCancel }: CourierFormProps) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [status, setStatus] = useState<'active' | 'inactive'>('active');
+  const [status, setStatus] = useState<'Активный' | 'Неактивный'>('Активный');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -84,13 +84,13 @@ export function CourierForm({ courier, onSave, onCancel }: CourierFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="status">Статус</Label>
-          <Select value={status} onValueChange={(value: 'active' | 'inactive') => setStatus(value)}>
+          <Select value={status} onValueChange={(value: 'Активный' | 'Неактивный') => setStatus(value)}>
             <SelectTrigger id="status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="active">Активен</SelectItem>
-              <SelectItem value="inactive">Неактивен</SelectItem>
+              <SelectItem value="Активный">Активен</SelectItem>
+              <SelectItem value="Неактивный">Неактивен</SelectItem>
             </SelectContent>
           </Select>
         </div>

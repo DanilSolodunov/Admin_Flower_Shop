@@ -1,7 +1,7 @@
 export interface User {
-  id: string;
-  username: string; // Логин
+  id: number;
+  username: string; 
   password: string;
-  name: string;     // Отображаемое имя
+  name: string;     
   role: 'admin';
 }

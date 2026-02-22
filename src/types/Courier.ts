@@ -1,6 +1,6 @@
 export interface Courier {
-  id: string;
+  id: number;
   name: string;
   phone: string;
-  status: 'active' | 'inactive';
+  status: 'Активный' | 'Неактивный';
 }

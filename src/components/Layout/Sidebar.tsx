@@ -4,6 +4,8 @@ import { Button } from '../ui/button';
 interface SidebarProps {
   currentView: 'products' | 'new_orders' | 'completed_orders' | 'couriers' | 'reports';
   onViewChange: (view: 'products' | 'new_orders' | 'completed_orders' | 'couriers' | 'reports') => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
 export function Sidebar({ currentView, onViewChange }: SidebarProps) {
@@ -47,7 +49,7 @@ export function Sidebar({ currentView, onViewChange }: SidebarProps) {
       <div className="p-4 border-t border-slate-700">
         <Button
           variant="ghost"
-          className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-700"
+          className="w-full justify-start text-red-500 hover:text-slate-900 hover:bg-slate-700"
           onClick={() => window.location.reload()}
         >
           <LogOut className="w-5 h-5 mr-3" />

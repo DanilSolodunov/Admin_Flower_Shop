@@ -15,7 +15,7 @@ import { User, Phone, Trash2, Edit } from 'lucide-react';
 interface CourierListProps {
   couriers: Courier[];
   onEdit: (courier: Courier) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
   onAdd: () => void;
 }
 
@@ -75,13 +75,13 @@ export function CourierList({ couriers, onEdit, onDelete, onAdd }: CourierListPr
                   </TableCell>
                   <TableCell>
                     <Badge 
-                      className={courier.status === 'active' 
+                      className={courier.status === 'Активный' 
                         ? 'bg-green-100 text-green-800 border-green-200' 
                         : 'bg-gray-100 text-gray-800 border-gray-200'
                       } 
                       variant="secondary"
                     >
-                      {courier.status === 'active' ? 'Активен' : 'Неактивен'}
+                      {courier.status === 'Активный' ? 'Активен' : 'Неактивен'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">

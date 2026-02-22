@@ -22,14 +22,14 @@ import { SidebarToggle } from './components/Layout/SidebarToggle';
 // Начальные данные
 const initialProducts: Product[] = [
   {
-    id: '1',
+    id: 1,
     imageurl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
     description: 'Часы классические',
     price: 5000,
     amount: 10,
   },
   {
-    id: '2',
+    id: 2,
     imageurl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
     description: 'Наушники беспроводные',
     price: 12000,
@@ -38,14 +38,14 @@ const initialProducts: Product[] = [
 ];
 
 const initialCouriers: Courier[] = [
-  { id: 'c1', name: 'Курьер 1 (Иванов А.)', phone: '+7 (999) 111-11-11', status: 'active' },
-  { id: 'c2', name: 'Курьер 2 (Петров Б.)', phone: '+7 (999) 222-22-22', status: 'active' },
-  { id: 'c3', name: 'Курьер 3 (Сидоров В.)', phone: '+7 (999) 333-33-33', status: 'active' },
+  { id: 1, name: 'Курьер 1 (Иванов А.)', phone: '+7 (999) 111-11-11', status: 'Активный' },
+  { id: 2, name: 'Курьер 2 (Петров Б.)', phone: '+7 (999) 222-22-22', status: 'Активный' },
+  { id: 3, name: 'Курьер 3 (Сидоров В.)', phone: '+7 (999) 333-33-33', status: 'Активный' },
 ];
 
 const initialOrders: Order[] = [
   {
-    id: 'ORD-001',
+    id: 1,
     products: [],
     total: 5000,
     status: 'ожидает',
@@ -91,7 +91,7 @@ export default function App() {
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
   const [closingOrder, setClosingOrder] = useState<Order | undefined>(undefined);
   const [isCloseOrderFormOpen, setIsCloseOrderFormOpen] = useState(false);
-  
+
   // Order Details State
   const [viewingOrder, setViewingOrder] = useState<Order | undefined>(undefined);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
@@ -104,11 +104,11 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Фильтрация заказов
-  const activeOrders = orders.filter(order => 
+  const activeOrders = orders.filter(order =>
     ['ожидает', 'собирается', 'отправлен'].includes(order.status)
   );
-  
-  const completedOrders = orders.filter(order => 
+
+  const completedOrders = orders.filter(order =>
     ['доставлен', 'отменен', 'возвращен'].includes(order.status)
   );
 
@@ -137,6 +137,12 @@ export default function App() {
     }
   }, []);
 
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('adminhub_auth');
+  };
+
   // Handlers
   const handleLogin = (username: string, password: string) => {
     const user = users.find(u => u.username === username && u.password === password);
@@ -144,42 +150,35 @@ export default function App() {
       setCurrentUser(user);
       setIsAuthenticated(true);
       localStorage.setItem('adminhub_auth', JSON.stringify(user));
-      return true;
+      return { success: true }; 
     }
-    return false;
+    return { success: false, error: 'Неверное имя пользователя или пароль' };
   };
 
   const handleRegister = (username: string, password: string) => {
     if (users.find(u => u.username === username)) {
-      return false;
+      return { success: false, error: 'Пользователь с таким именем уже существует' };
     }
     const newUser: User = {
-      id: String(users.length + 1),
+      id: users.length + 1,
       username,
       password,
       name: username,
       role: 'admin',
     };
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
+    users.push(newUser);
     setCurrentUser(newUser);
     setIsAuthenticated(true);
     localStorage.setItem('adminhub_auth', JSON.stringify(newUser));
-    return true;
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('adminhub_auth');
+    return { success: true }; 
   };
 
   const handleUpdateUser = (data: { name: string; username: string; password: string }) => {
     if (!currentUser) return;
 
-    const updatedUsers = users.map(u => 
-      u.id === currentUser.id 
-        ? { ...u, ...data } 
+    const updatedUsers = users.map(u =>
+      u.id === currentUser.id
+        ? { ...u, ...data }
         : u
     );
     setUsers(updatedUsers);
@@ -187,7 +186,7 @@ export default function App() {
     const updatedCurrentUser = { ...currentUser, ...data };
     setCurrentUser(updatedCurrentUser);
     localStorage.setItem('adminhub_auth', JSON.stringify(updatedCurrentUser));
-    
+
     setIsSettingsOpen(false);
   };
 
@@ -207,7 +206,7 @@ export default function App() {
     } else {
       const newProduct: Product = {
         ...productData,
-        id: String(Date.now()),
+        id: Number(Date.now()),
       };
       setProducts([...products, newProduct]);
     }
@@ -215,7 +214,7 @@ export default function App() {
     setEditingProduct(undefined);
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = (id: number) => {
     setProducts(products.filter(p => p.id !== id));
   };
 
@@ -225,21 +224,21 @@ export default function App() {
   };
 
   const handleCloseOrder = (
-    orderId: string, 
-    status: Order['status'], 
-    paymentMethod: 'наличный расчет' | 'online', 
-    courier: string,
+    orderId: number,
+    status: Order['status'],
+    paymentMethod: 'наличный расчет' | 'online',
+    courier: number,
     reason: string
   ) => {
-    setOrders(orders.map(order => 
-      order.id === orderId 
-        ? { 
-            ...order, 
-            status, 
-            paymentMethod, 
-            courier,
-            reason 
-          } 
+    setOrders(orders.map(order =>
+      order.id === orderId
+        ? {
+          ...order,
+          status,
+          paymentMethod,
+          courier,
+          reason
+        }
         : order
     ));
     setIsCloseOrderFormOpen(false);
@@ -256,11 +255,11 @@ export default function App() {
     setIsOrderDetailsOpen(true);
   };
 
-  const handleAssignCourier = (courier: 'Курьер 1' | 'Курьер 2' | 'Курьер 3') => {
+  const handleAssignCourier = (courier: number | null) => {
     if (viewingOrder) {
-      setOrders(orders.map(order => 
-        order.id === viewingOrder.id 
-          ? { ...order, courier } 
+      setOrders(orders.map(order =>
+        order.id === viewingOrder.id
+          ? { ...order, courier }
           : order
       ));
     }
@@ -272,7 +271,7 @@ export default function App() {
     } else {
       const newCourier: Courier = {
         ...courierData,
-        id: String(Date.now()),
+        id: Number(Date.now()),
       };
       setCouriers([...couriers, newCourier]);
     }
@@ -280,7 +279,7 @@ export default function App() {
     setEditingCourier(undefined);
   };
 
-  const handleDeleteCourier = (id: string) => {
+  const handleDeleteCourier = (id: number) => {
     setCouriers(couriers.filter(c => c.id !== id));
   };
 
@@ -293,129 +292,131 @@ export default function App() {
     return <LoginForm onLogin={handleLogin} onRegister={handleRegister} />;
   }
   return (
-  <div className="h-screen bg-gray-600 relative overflow-hidden">
-    {/* Узкая вертикальная панель */}
-    <SidebarToggle onClick={() => setSidebarOpen(true)} />
+    <div className="h-screen bg-gray-600 relative overflow-hidden">
+      {/* Узкая вертикальная панель */}
+      <SidebarToggle onClick={() => setSidebarOpen(true)} />
 
-    {/* Overlay */}
-    {isSidebarOpen && (
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Выезжающий Sidebar */}
       <div
-        className="fixed inset-0 bg-black/40 z-40"
-        onClick={() => setSidebarOpen(false)}
-      />
-    )}
-
-    {/* Выезжающий Sidebar */}
-    <div
-      className={`
+        className={`
         fixed top-0 left-0 h-full w-64 bg-slate-800 z-50
         transform transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}
-    >
-      <Sidebar
-        currentView={currentView}
-        onViewChange={(view) => {
-          setCurrentView(view);
-          setSidebarOpen(false);
-        }}
-      />
-    </div>
-
-    {/* Основной контейнер */}
-    <div className="flex h-full ml-12">
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header
-          username={currentUser?.name || currentUser?.username || 'Admin'}
-          onOpenSettings={() => setIsSettingsOpen(true)}
+      >
+        <Sidebar
+          currentView={currentView}
+          onViewChange={(view) => {
+            setCurrentView(view);
+            setSidebarOpen(false);
+          }}
+          isOpen={isSidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
-
-        <main className="flex-1 overflow-auto p-6">
-          {currentView === 'products' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-white">
-                  Управление товарами
-                </h1>
-                <Button
-                  onClick={() => {
-                    setEditingProduct(undefined);
-                    setIsProductFormOpen(true);
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Добавить товар
-                </Button>
-              </div>
-
-              <ProductTable
-                products={products}
-                onEdit={handleEditProduct}
-                onDelete={handleDeleteProduct}
-              />
-            </div>
-          )}
-
-          {currentView === 'new_orders' && (
-            <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-white">
-                Новые заказы
-              </h1>
-
-              <OrderTable
-                orders={activeOrders}
-                onCloseOrder={handleCloseOrderClick}
-                onViewOrder={handleViewOrder}
-                showActions={true}
-              />
-            </div>
-          )}
-
-          {currentView === 'completed_orders' && (
-            <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-white">
-                Завершенные заказы
-              </h1>
-
-              <OrderTable
-                orders={completedOrders}
-                onCloseOrder={handleCloseOrderClick}
-                onViewOrder={handleViewOrder}
-                showActions={false}
-              />
-            </div>
-          )}
-
-          {currentView === 'couriers' && (
-            <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-white">
-                Управление курьерами
-              </h1>
-
-              <CourierList
-                couriers={couriers}
-                onEdit={handleEditCourier}
-                onDelete={handleDeleteCourier}
-                onAdd={() => {
-                  setEditingCourier(undefined);
-                  setIsCourierFormOpen(true);
-                }}
-              />
-            </div>
-          )}
-
-          {currentView === 'reports' && (
-            <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-white">
-                Финансовые отчеты
-              </h1>
-
-              <RevenueReport orders={orders} />
-            </div>
-          )}
-        </main>
       </div>
-    </div>
+
+      {/* Основной контейнер */}
+      <div className="flex h-full ml-12">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header
+            username={currentUser?.name || currentUser?.username || 'Admin'}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+          />
+
+          <main className="flex-1 overflow-auto p-6">
+            {currentView === 'products' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-bold text-white">
+                    Управление товарами
+                  </h1>
+                  <Button
+                    onClick={() => {
+                      setEditingProduct(undefined);
+                      setIsProductFormOpen(true);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Добавить товар
+                  </Button>
+                </div>
+
+                <ProductTable
+                  products={products}
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                />
+              </div>
+            )}
+
+            {currentView === 'new_orders' && (
+              <div className="space-y-6">
+                <h1 className="text-2xl font-bold text-white">
+                  Новые заказы
+                </h1>
+
+                <OrderTable
+                  orders={activeOrders}
+                  onCloseOrder={handleCloseOrderClick}
+                  onViewOrder={handleViewOrder}
+                  showActions={true}
+                />
+              </div>
+            )}
+
+            {currentView === 'completed_orders' && (
+              <div className="space-y-6">
+                <h1 className="text-2xl font-bold text-white">
+                  Завершенные заказы
+                </h1>
+
+                <OrderTable
+                  orders={completedOrders}
+                  onCloseOrder={handleCloseOrderClick}
+                  onViewOrder={handleViewOrder}
+                  showActions={false}
+                />
+              </div>
+            )}
+
+            {currentView === 'couriers' && (
+              <div className="space-y-6">
+                <h1 className="text-2xl font-bold text-white">
+                  Управление курьерами
+                </h1>
+
+                <CourierList
+                  couriers={couriers}
+                  onEdit={handleEditCourier}
+                  onDelete={handleDeleteCourier}
+                  onAdd={() => {
+                    setEditingCourier(undefined);
+                    setIsCourierFormOpen(true);
+                  }}
+                />
+              </div>
+            )}
+
+            {currentView === 'reports' && (
+              <div className="space-y-6">
+                <h1 className="text-2xl font-bold text-white">
+                  Финансовые отчеты
+                </h1>
+
+                <RevenueReport orders={orders} />
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
 
       {/* Dialogs */}
       <Dialog open={isProductFormOpen} onOpenChange={setIsProductFormOpen}>

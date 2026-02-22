@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Order } from '../../types/Order';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-//import { Table } from '../ui/table';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Calendar, DollarSign, ShoppingCart, TrendingUp, Infinity } from 'lucide-react';
 import {
@@ -48,7 +47,7 @@ export function RevenueReport({ orders }: RevenueReportProps) {
         end = endOfDay(now);
         break;
       case 'week':
-        start = startOfWeek(now, { weekStartsOn: 1 }); // Неделя начинается с понедельника
+        start = startOfWeek(now, { weekStartsOn: 1 }); 
         end = endOfWeek(now, { weekStartsOn: 1 });
         break;
       case 'month':
@@ -60,8 +59,8 @@ export function RevenueReport({ orders }: RevenueReportProps) {
         end = endOfYear(now);
         break;
       case 'all':
-        start = new Date(0); // Начало эпохи Unix
-        end = new Date(); // Текущее время
+        start = new Date(0); 
+        end = new Date(); 
         break;
       default:
         start = startOfDay(now);
@@ -134,7 +133,7 @@ export function RevenueReport({ orders }: RevenueReportProps) {
           <div className="flex flex-col gap-6">
             <RadioGroup
   value={period}
-  onChange={(value) => setPeriod(value as PeriodType)}
+  onValueChange={(value) => setPeriod(value as PeriodType)}
 >
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
     <RadioGroupItem value="day">День</RadioGroupItem>

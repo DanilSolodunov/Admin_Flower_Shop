@@ -7,13 +7,13 @@ import { Edit, Trash2, Image as ImageIcon } from 'lucide-react';
 interface ProductTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
 }
 
 export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [deleteProductId, setDeleteProductId] = useState<number | null>(null);
 
   const totalPages = Math.ceil(products.length / itemsPerPage);
 
@@ -28,7 +28,7 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
     }
   };
 
-  const handleDeleteClick = (id: string) => {
+  const handleDeleteClick = (id: number) => {
     setDeleteProductId(id);
   };
 

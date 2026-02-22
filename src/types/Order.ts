@@ -1,10 +1,10 @@
 export interface Order {
-  id: string;
+  id: number;
   products: { product: any; quantity: number }[];
   total: number;
-  status: 'ожидает' | 'собирается' | 'отправлен' | 'доставлен' | 'отменен' | 'возвращен';
+  status: string;
   date: string;
   paymentMethod: 'наличный расчет' | 'online' | null;
-  courier: string | null;
+  courier: number | null;
   reason?: string; // Новое поле: причина закрытия
 }

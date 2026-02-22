@@ -13,17 +13,17 @@ import {
   SelectValue,
 } from '../ui/select';
 import { User, Calendar, Package, CreditCard, MapPin } from 'lucide-react';
+import { Label } from '../ui/label';
 
 interface OrderDetailsProps {
   order: Order;
-  onAssignCourier: (courier: 'Курьер 1' | 'Курьер 2' | 'Курьер 3') => void;
+  onAssignCourier: (courier: number) => void;
   onClose: () => void;
 }
 
 export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsProps) {
-  const [selectedCourier, setSelectedCourier] = React.useState<'Курьер 1' | 'Курьер 2' | 'Курьер 3' | ''>(
-    order.courier || ''
-  );
+  const [selectedCourier, setSelectedCourier] = 
+  React.useState<number | ''>(order.courier ?? '');
 
   const handleSaveCourier = () => {
     if (selectedCourier) {
@@ -34,11 +34,11 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ожидает': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'собирается': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'отправлен': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'доставлен': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'ожидает': return 'bg-yellow-300 text-yellow-800 border-yellow-200';
+      case 'собирается': return 'bg-blue-300 text-blue-800 border-blue-200';
+      case 'отправлен': return 'bg-purple-300 text-purple-800 border-purple-200';
+      case 'доставлен': return 'bg-green-300 text-green-800 border-green-200';
+      default: return 'bg-gray-200 text-gray-800 border-gray-200';
     }
   };
 
@@ -77,8 +77,8 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
                 <div key={index} className="flex justify-between items-start gap-4">
                   <div className="flex items-center gap-3 flex-1">
                     <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
-                      <img 
-                        src={item.product.imageurl} 
+                      <img
+                        src={item.product.imageurl}
                         alt={item.product.description}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -121,7 +121,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
             </CardContent>
           </Card>
         )}
-        
+
         <Card className="border-slate-200">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -159,15 +159,15 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
               <p className="text-sm text-slate-500">Курьер еще не назначен</p>
             </div>
           )}
-          
+
           {order.status !== 'доставлен' && (
             <div className="space-y-3 pt-2">
-              <Table htmlFor="courier-select" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="courier-select" className="text-sm font-medium text-slate-700">
                 {order.courier ? 'Сменить курьера' : 'Назначить курьера'}
-              </Table>
-              <Select 
-                value={selectedCourier} 
-                onValueChange={(value) => setSelectedCourier(value as any)}
+              </Label>
+              <Select
+                value={selectedCourier}
+                onValueChange={(val) => setSelectedCourier(val === 0 ? "" : val)}
               >
                 <SelectTrigger id="courier-select" className="w-full">
                   <SelectValue placeholder="Выберите курьера из списка" />
@@ -176,18 +176,19 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
                   <SelectItem value="Курьер 1">Курьер 1 (Иванов А.)</SelectItem>
                   <SelectItem value="Курьер 2">Курьер 2 (Петров Б.)</SelectItem>
                   <SelectItem value="Курьер 3">Курьер 3 (Сидоров В.)</SelectItem>
+                  <SelectItem value={0}>Не назначен</SelectItem>
                 </SelectContent>
               </Select>
               <div className="flex gap-2">
-                <Button 
-                  onClick={handleSaveCourier} 
+                <Button
+                  onClick={handleSaveCourier}
                   disabled={!selectedCourier}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
                   Сохранить
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={onClose}
                   className="flex-1"
                 >

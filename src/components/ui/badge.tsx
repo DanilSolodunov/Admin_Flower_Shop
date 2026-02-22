@@ -1,21 +1,34 @@
 import React from 'react';
 import clsx from 'clsx';
 
-interface BadgeProps {
+export type BadgeVariant = 'default' | 'secondary' | 'success' | 'error';
+
+export interface BadgeProps {
   children: React.ReactNode;
-  color?: 'green' | 'red' | 'blue' | 'gray';
+  variant?: BadgeVariant;
+  className?: string;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ children, color = 'gray' }) => {
-  const colors = {
-    green: 'bg-green-100 text-green-800',
-    red: 'bg-red-100 text-red-800',
-    blue: 'bg-blue-100 text-blue-800',
-    gray: 'bg-white text-gray-800',
+export const Badge: React.FC<BadgeProps> = ({
+  children,
+  variant = 'default',
+  className,
+}) => {
+  const variantClasses: Record<BadgeVariant, string> = {
+    default: 'bg-slate-200 text-slate-800',
+    secondary: 'bg-slate-500 text-white',
+    success: 'bg-green-500 text-white',
+    error: 'bg-red-500 text-white',
   };
 
   return (
-    <span className={clsx("px-2 py-1 rounded-full text-xs font-semibold", colors[color])}>
+    <span
+      className={clsx(
+        'px-2 py-1 rounded-full text-sm font-medium',
+        variantClasses[variant],
+        className
+      )}
+    >
       {children}
     </span>
   );

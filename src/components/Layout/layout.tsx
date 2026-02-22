@@ -18,8 +18,8 @@ export function Layout() {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const views: Record<ViewType, React.ReactNode> = {
         products: <ProductsPage />,
-        new_orders: <OrdersPage status="new" />,
-        completed_orders: <OrdersPage status="completed" />,
+        new_orders: <OrdersPage statusView="new" />,
+        completed_orders: <OrdersPage statusView="completed" />,
         couriers: <CouriersPage />,
         reports: <ReportsPage />,
     };

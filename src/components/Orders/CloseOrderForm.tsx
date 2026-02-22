@@ -15,10 +15,10 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 interface CloseOrderFormProps {
   order: Order;
   onClose: (
-    orderId: string,
+    orderId: number,
     status: Order['status'],
     paymentMethod: 'наличный расчет' | 'online',
-    courier: string,
+    courier: number,
     reason: string
   ) => void;
   onCancel: () => void;
@@ -37,21 +37,19 @@ const STATUSES: Order['status'][] = ['доставлен', 'отменен', 'в
 export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps) {
   const [reason, setReason] = useState('');
   const [status, setStatus] = useState<Order['status']>('доставлен');
-  const [paymentMethod, setPaymentMethod] = useState<'наличный расчет' | 'online'>('наличный расчет');
-  const [courier, setCourier] = useState(order.courier || 'Курьер 1');
+  const [paymentMethod, setPaymentMethod] =
+  useState<'наличный расчет' | 'online'>('наличный расчет');
+  const [courier, setCourier] = useState(order.courier || 1);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!reason) {
       newErrors.reason = 'Выберите причину закрытия';
     }
     if (!status) {
       newErrors.status = 'Выберите статус заказа';
-    }
-    if (!paymentMethod) {
-      newErrors.paymentMethod = 'Выберите способ оплаты';
     }
 
     setErrors(newErrors);
@@ -107,19 +105,22 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
         {/* Способ оплаты */}
         <div className="space-y-3">
           <Label>Способ оплаты *</Label>
-          <RadioGroup 
-            value={paymentMethod} 
-            onValueChange={(value: 'наличный расчет' | 'online') => setPaymentMethod(value)}
+          <RadioGroup
+            value={paymentMethod}
+            // onValueChange={(value: 'наличный расчет' | 'online') => setPaymentMethod(value)}
+            onValueChange={(value) =>
+              setPaymentMethod(value as 'наличный расчет' | 'online')
+            }
             className="flex flex-col gap-3"
           >
             <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
-              <RadioGroupItem value="наличный расчет" id="cash" />
+              <RadioGroupItem value='наличный расчет'>Наличный расчет</RadioGroupItem>
               <Label htmlFor="cash" className="flex-1 cursor-pointer font-normal">
                 Наличный расчет
               </Label>
             </div>
             <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
-              <RadioGroupItem value="online" id="online" />
+              <RadioGroupItem value="online"> online </RadioGroupItem>
               <Label htmlFor="online" className="flex-1 cursor-pointer font-normal">
                 Онлайн оплата
               </Label>

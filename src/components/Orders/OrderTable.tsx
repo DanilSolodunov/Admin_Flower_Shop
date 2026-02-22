@@ -21,16 +21,18 @@ import { Eye, XCircle } from 'lucide-react';
 
 interface OrderTableProps {
   orders: Order[];
+  onEdit?: (order: Order) => void;
+  onDelete?: (id: number) => void;
   onCloseOrder: (order: Order) => void;
   onViewOrder: (order: Order) => void;
-  showActions?: boolean; // Новый проп для управления видимостью колонки действий
+  showActions?: boolean;
 }
 
 export function OrderTable({ orders, onCloseOrder, onViewOrder, showActions = true }: OrderTableProps) {
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('Все статусы');
 
   const filteredOrders = orders.filter(order => {
-    if (statusFilter === 'all') return true;
+    if (statusFilter === 'Все статусы') return true;
     return order.status === statusFilter;
   });
 
@@ -63,7 +65,7 @@ export function OrderTable({ orders, onCloseOrder, onViewOrder, showActions = tr
             <SelectValue placeholder="Фильтр по статусу" />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
-            <SelectItem value="all">Все статусы</SelectItem>
+            <SelectItem value="Все статусы">Все статусы</SelectItem>
             <SelectItem value="ожидает">Ожидает</SelectItem>
             <SelectItem value="собирается">Собирается</SelectItem>
             <SelectItem value="отправлен">Отправлен</SelectItem>
