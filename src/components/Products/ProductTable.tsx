@@ -23,7 +23,7 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
 
   const handleDeleteConfirm = () => {
     if (deleteProductId) {
-      onDelete(deleteProductId); // Исправлено: вызываем onDelete вместо onDeleteProduct
+      onDelete(deleteProductId);
       setDeleteProductId(null);
     }
   };
