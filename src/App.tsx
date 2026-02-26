@@ -1,9 +1,9 @@
+// App.tsx
 import { useState, useEffect } from 'react';
 import { Product } from './types/Product';
 import { Order } from './types/Order';
 import { User } from './types/User';
 import { Courier } from './types/Courier';
-import { Sidebar } from './components/Layout/Sidebar';
 import { Header } from './components/Layout/Header';
 import { LoginForm } from './components/Auth/LoginForm';
 import { ProductTable } from './components/Products/ProductTable';
@@ -17,50 +17,23 @@ import { CourierForm } from './components/Couriers/CourierForm';
 import { SettingsForm } from './components/Settings/SettingsForm';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
-import { SidebarToggle } from './components/Layout/SidebarToggle';
+import { Package, ShoppingCart, CheckCircle, BarChart3, Users } from 'lucide-react';
 
-// Начальные данные
-const initialProducts: Product[] = [
-  {
-    id: 1,
-    imageurl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
-    description: 'Часы классические',
-    price: 5000,
-    amount: 10,
-  },
-  {
-    id: 2,
-    imageurl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
-    description: 'Наушники беспроводные',
-    price: 12000,
-    amount: 5,
-  },
-];
+// Навигационные вкладки
+const menuItems = [
+  { id: 'products' as const, label: 'Товары', icon: Package },
+  { id: 'new_orders' as const, label: 'Новые', icon: ShoppingCart },
+  { id: 'completed_orders' as const, label: 'Завершенные', icon: CheckCircle },
+  { id: 'couriers' as const, label: 'Курьеры', icon: Users },
+  { id: 'reports' as const, label: 'Отчеты', icon: BarChart3 },
 
-const initialCouriers: Courier[] = [
-  { id: 1, name: 'Курьер 1 (Иванов А.)', phone: '+7 (999) 111-11-11', status: 'Активный' },
-  { id: 2, name: 'Курьер 2 (Петров Б.)', phone: '+7 (999) 222-22-22', status: 'Активный' },
-  { id: 3, name: 'Курьер 3 (Сидоров В.)', phone: '+7 (999) 333-33-33', status: 'Активный' },
-];
-
-const initialOrders: Order[] = [
-  {
-    id: 1,
-    products: [],
-    total: 5000,
-    status: 'ожидает',
-    date: new Date().toISOString(),
-    paymentMethod: null,
-    courier: null,
-  },
 ];
 
 export default function App() {
+
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-
 
   // Users State
   const [users, setUsers] = useState<User[]>(() => {
@@ -72,17 +45,19 @@ export default function App() {
   // Data State
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('adminhub_products');
-    return saved ? JSON.parse(saved) : initialProducts;
+    return saved ? JSON.parse(saved) : [];
   });
+
+
 
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('adminhub_orders');
-    return saved ? JSON.parse(saved) : initialOrders;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [couriers, setCouriers] = useState<Courier[]>(() => {
     const saved = localStorage.getItem('adminhub_couriers');
-    return saved ? JSON.parse(saved) : initialCouriers;
+    return saved ? JSON.parse(saved) : [];
   });
 
   // UI State
@@ -91,44 +66,25 @@ export default function App() {
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
   const [closingOrder, setClosingOrder] = useState<Order | undefined>(undefined);
   const [isCloseOrderFormOpen, setIsCloseOrderFormOpen] = useState(false);
-
-  // Order Details State
   const [viewingOrder, setViewingOrder] = useState<Order | undefined>(undefined);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
-
-  // Courier State
   const [editingCourier, setEditingCourier] = useState<Courier | undefined>(undefined);
   const [isCourierFormOpen, setIsCourierFormOpen] = useState(false);
-
-  // Settings State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Фильтрация заказов
   const activeOrders = orders.filter(order =>
     ['ожидает', 'собирается', 'отправлен'].includes(order.status)
   );
-
   const completedOrders = orders.filter(order =>
     ['доставлен', 'отменен', 'возвращен'].includes(order.status)
   );
 
   // Persistence
-  useEffect(() => {
-    localStorage.setItem('adminhub_products', JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem('adminhub_orders', JSON.stringify(orders));
-  }, [orders]);
-
-  useEffect(() => {
-    localStorage.setItem('adminhub_users', JSON.stringify(users));
-  }, [users]);
-
-  useEffect(() => {
-    localStorage.setItem('adminhub_couriers', JSON.stringify(couriers));
-  }, [couriers]);
-
+  useEffect(() => { localStorage.setItem('adminhub_products', JSON.stringify(products)); }, [products]);
+  useEffect(() => { localStorage.setItem('adminhub_orders', JSON.stringify(orders)); }, [orders]);
+  useEffect(() => { localStorage.setItem('adminhub_users', JSON.stringify(users)); }, [users]);
+  useEffect(() => { localStorage.setItem('adminhub_couriers', JSON.stringify(couriers)); }, [couriers]);
   useEffect(() => {
     const savedAuth = localStorage.getItem('adminhub_auth');
     if (savedAuth) {
@@ -137,366 +93,126 @@ export default function App() {
     }
   }, []);
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('adminhub_auth');
-  };
+  if (!isAuthenticated) return <LoginForm onLogin={(u, p) => {
+    const user = users.find(x => x.username === u && x.password === p);
+    if (user) { setCurrentUser(user); setIsAuthenticated(true); localStorage.setItem('adminhub_auth', JSON.stringify(user)); return { success: true }; }
+    return { success: false, error: 'Неверные данные' };
+  }} onRegister={(u, p) => {
+    if (users.find(x => x.username === u)) return { success: false, error: 'Пользователь существует' };
+    const newUser: User = { id: String(users.length + 1), username: u, password: p, name: u, role: 'admin' };
+    setUsers([...users, newUser]); setCurrentUser(newUser); setIsAuthenticated(true); localStorage.setItem('adminhub_auth', JSON.stringify(newUser)); return { success: true };
+  }} />;
 
-  // Handlers
-  const handleLogin = (username: string, password: string) => {
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      localStorage.setItem('adminhub_auth', JSON.stringify(user));
-      return { success: true }; 
-    }
-    return { success: false, error: 'Неверное имя пользователя или пароль' };
-  };
+  const views: Record<typeof currentView, React.ReactNode> = {
+    products: (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-white">
+            Управление товарами
+          </h1>
 
-  const handleRegister = (username: string, password: string) => {
-    if (users.find(u => u.username === username)) {
-      return { success: false, error: 'Пользователь с таким именем уже существует' };
-    }
-    const newUser: User = {
-      id: users.length + 1,
-      username,
-      password,
-      name: username,
-      role: 'admin',
-    };
-    users.push(newUser);
-    setCurrentUser(newUser);
-    setIsAuthenticated(true);
-    localStorage.setItem('adminhub_auth', JSON.stringify(newUser));
-    return { success: true }; 
-  };
-
-  const handleUpdateUser = (data: { name: string; username: string; password: string }) => {
-    if (!currentUser) return;
-
-    const updatedUsers = users.map(u =>
-      u.id === currentUser.id
-        ? { ...u, ...data }
-        : u
-    );
-    setUsers(updatedUsers);
-
-    const updatedCurrentUser = { ...currentUser, ...data };
-    setCurrentUser(updatedCurrentUser);
-    localStorage.setItem('adminhub_auth', JSON.stringify(updatedCurrentUser));
-
-    setIsSettingsOpen(false);
-  };
-
-  const handleDeleteAccount = () => {
-    if (!currentUser) return;
-
-    const updatedUsers = users.filter(u => u.id !== currentUser.id);
-    setUsers(updatedUsers);
-
-    handleLogout();
-    setIsSettingsOpen(false);
-  };
-
-  const handleSaveProduct = (productData: Omit<Product, 'id'>) => {
-    if (editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? { ...productData, id: editingProduct.id } : p));
-    } else {
-      const newProduct: Product = {
-        ...productData,
-        id: Number(Date.now()),
-      };
-      setProducts([...products, newProduct]);
-    }
-    setIsProductFormOpen(false);
-    setEditingProduct(undefined);
-  };
-
-  const handleDeleteProduct = (id: number) => {
-    setProducts(products.filter(p => p.id !== id));
-  };
-
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
-    setIsProductFormOpen(true);
-  };
-
-  const handleCloseOrder = (
-    orderId: number,
-    status: Order['status'],
-    paymentMethod: 'наличный расчет' | 'online',
-    courier: number,
-    reason: string
-  ) => {
-    setOrders(orders.map(order =>
-      order.id === orderId
-        ? {
-          ...order,
-          status,
-          paymentMethod,
-          courier,
-          reason
-        }
-        : order
-    ));
-    setIsCloseOrderFormOpen(false);
-    setClosingOrder(undefined);
-  };
-
-  const handleCloseOrderClick = (order: Order) => {
-    setClosingOrder(order);
-    setIsCloseOrderFormOpen(true);
-  };
-
-  const handleViewOrder = (order: Order) => {
-    setViewingOrder(order);
-    setIsOrderDetailsOpen(true);
-  };
-
-  const handleAssignCourier = (courier: number | null) => {
-    if (viewingOrder) {
-      setOrders(orders.map(order =>
-        order.id === viewingOrder.id
-          ? { ...order, courier }
-          : order
-      ));
-    }
-  };
-
-  const handleSaveCourier = (courierData: Omit<Courier, 'id'>) => {
-    if (editingCourier) {
-      setCouriers(couriers.map(c => c.id === editingCourier.id ? { ...courierData, id: editingCourier.id } : c));
-    } else {
-      const newCourier: Courier = {
-        ...courierData,
-        id: Number(Date.now()),
-      };
-      setCouriers([...couriers, newCourier]);
-    }
-    setIsCourierFormOpen(false);
-    setEditingCourier(undefined);
-  };
-
-  const handleDeleteCourier = (id: number) => {
-    setCouriers(couriers.filter(c => c.id !== id));
-  };
-
-  const handleEditCourier = (courier: Courier) => {
-    setEditingCourier(courier);
-    setIsCourierFormOpen(true);
-  };
-
-  if (!isAuthenticated) {
-    return <LoginForm onLogin={handleLogin} onRegister={handleRegister} />;
-  }
-  return (
-    <div className="h-screen bg-gray-600 relative overflow-hidden">
-      {/* Узкая вертикальная панель */}
-      <SidebarToggle onClick={() => setSidebarOpen(true)} />
-
-      {/* Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Выезжающий Sidebar */}
-      <div
-        className={`
-        fixed top-0 left-0 h-full w-64 bg-slate-800 z-50
-        transform transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}
-      >
-        <Sidebar
-          currentView={currentView}
-          onViewChange={(view) => {
-            setCurrentView(view);
-            setSidebarOpen(false);
-          }}
-          isOpen={isSidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-      </div>
-
-      {/* Основной контейнер */}
-      <div className="flex h-full ml-12">
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header
-            username={currentUser?.name || currentUser?.username || 'Admin'}
-            onOpenSettings={() => setIsSettingsOpen(true)}
-          />
-
-          <main className="flex-1 overflow-auto p-6">
-            {currentView === 'products' && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h1 className="text-2xl font-bold text-white">
-                    Управление товарами
-                  </h1>
-                  <Button
-                    onClick={() => {
-                      setEditingProduct(undefined);
-                      setIsProductFormOpen(true);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    Добавить товар
-                  </Button>
-                </div>
-
-                <ProductTable
-                  products={products}
-                  onEdit={handleEditProduct}
-                  onDelete={handleDeleteProduct}
-                />
-              </div>
-            )}
-
-            {currentView === 'new_orders' && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-white">
-                  Новые заказы
-                </h1>
-
-                <OrderTable
-                  orders={activeOrders}
-                  onCloseOrder={handleCloseOrderClick}
-                  onViewOrder={handleViewOrder}
-                  showActions={true}
-                />
-              </div>
-            )}
-
-            {currentView === 'completed_orders' && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-white">
-                  Завершенные заказы
-                </h1>
-
-                <OrderTable
-                  orders={completedOrders}
-                  onCloseOrder={handleCloseOrderClick}
-                  onViewOrder={handleViewOrder}
-                  showActions={false}
-                />
-              </div>
-            )}
-
-            {currentView === 'couriers' && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-white">
-                  Управление курьерами
-                </h1>
-
-                <CourierList
-                  couriers={couriers}
-                  onEdit={handleEditCourier}
-                  onDelete={handleDeleteCourier}
-                  onAdd={() => {
-                    setEditingCourier(undefined);
-                    setIsCourierFormOpen(true);
-                  }}
-                />
-              </div>
-            )}
-
-            {currentView === 'reports' && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-white">
-                  Финансовые отчеты
-                </h1>
-
-                <RevenueReport orders={orders} />
-              </div>
-            )}
-          </main>
+          <Button
+            onClick={() => {
+              setEditingProduct(undefined);
+              setIsProductFormOpen(true);
+            }}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Добавить товар
+          </Button>
         </div>
-      </div>
 
-      {/* Dialogs */}
+        <ProductTable
+          products={products}
+          onEdit={(product) => {
+            setEditingProduct(product);
+            setIsProductFormOpen(true); // 🔥 ВАЖНО
+          }}
+          onDelete={(id) =>
+            setProducts(products.filter((p) => p.id !== id))
+          }
+        />
+      </div>
+    ),
+    new_orders: (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-white">Новые заказы</h1>
+        <OrderTable orders={activeOrders} onCloseOrder={(o) => { setClosingOrder(o); setIsCloseOrderFormOpen(true); }} onViewOrder={setViewingOrder} showActions />
+      </div>
+    ),
+    completed_orders: (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-white">Завершенные заказы</h1>
+        <OrderTable orders={completedOrders} onCloseOrder={() => { }} onViewOrder={setViewingOrder} showActions={false} />
+      </div>
+    ),
+    couriers: (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-white">Управление курьерами</h1>
+        <CourierList couriers={couriers} onEdit={setEditingCourier} onDelete={(id) => setCouriers(couriers.filter(c => c.id !== id))} onAdd={() => { setEditingCourier(undefined); setIsCourierFormOpen(true) }} />
+      </div>
+    ),
+    reports: (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-white">Финансовые отчеты</h1>
+        <RevenueReport orders={orders} />
+      </div>
+    ),
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-gray-600">
+      <Header username={currentUser?.name || 'Admin'} onOpenSettings={() => setIsSettingsOpen(true)} />
+      <main className="flex-1 overflow-auto p-6">
+        {views[currentView]}
+      </main>
+      {/* Нижнее меню */}
+      <nav className="fixed bottom-0 left-0 w-full bg-slate-800 border-t border-slate-700 flex justify-around items-center py-2 z-50">
+        {menuItems.map(item => {
+          const Icon = item.icon;
+          const isActive = currentView === item.id;
+          return (
+            <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex flex-col items-center text-xs transition-colors ${isActive ? 'text-blue-500' : 'text-slate-300 hover:text-white'}`}>
+              <Icon className="w-6 h-6 mb-1" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Диалоги */}
       <Dialog open={isProductFormOpen} onOpenChange={setIsProductFormOpen}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingProduct ? 'Редактировать товар' : 'Добавить товар'}</DialogTitle>
-          </DialogHeader>
-          <ProductForm
-            product={editingProduct}
-            onSave={handleSaveProduct}
-            onCancel={() => {
-              setIsProductFormOpen(false);
-              setEditingProduct(undefined);
-            }}
-          />
+          <DialogHeader><DialogTitle>{editingProduct ? 'Редактировать товар' : 'Добавить товар'}</DialogTitle></DialogHeader>
+          <ProductForm product={editingProduct} onSave={(data) => { if (editingProduct) { setProducts(products.map(p => p.id === editingProduct.id ? { ...data, id: p.id } : p)) } else { setProducts([...products, { ...data, id: Date.now() }]) } setIsProductFormOpen(false); setEditingProduct(undefined) }} onCancel={() => { setIsProductFormOpen(false); setEditingProduct(undefined) }} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={isCloseOrderFormOpen} onOpenChange={setIsCloseOrderFormOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Закрыть заказ</DialogTitle>
-          </DialogHeader>
-          {closingOrder && (
-            <CloseOrderForm
-              order={closingOrder}
-              onClose={handleCloseOrder}
-              onCancel={() => {
-                setIsCloseOrderFormOpen(false);
-                setClosingOrder(undefined);
-              }}
-            />
-          )}
+          <DialogHeader><DialogTitle>Закрыть заказ</DialogTitle></DialogHeader>
+          {closingOrder && <CloseOrderForm order={closingOrder} onClose={(id, status, paymentMethod, courier, reason) => { setOrders(orders.map(o => o.id === id ? { ...o, status, paymentMethod, courier, reason } : o)); setIsCloseOrderFormOpen(false); setClosingOrder(undefined) }} onCancel={() => { setIsCloseOrderFormOpen(false); setClosingOrder(undefined) }} />}
         </DialogContent>
       </Dialog>
 
       <Dialog open={isOrderDetailsOpen} onOpenChange={setIsOrderDetailsOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Детали заказа</DialogTitle>
-          </DialogHeader>
-          {viewingOrder && (
-            <OrderDetails
-              order={viewingOrder}
-              onAssignCourier={handleAssignCourier}
-              onClose={() => setIsOrderDetailsOpen(false)}
-            />
-          )}
+          <DialogHeader><DialogTitle>Детали заказа</DialogTitle></DialogHeader>
+          {viewingOrder && <OrderDetails order={viewingOrder} onAssignCourier={(c) => { setOrders(orders.map(o => o.id === viewingOrder.id ? { ...o, courier: c } : o)) }} onClose={() => setIsOrderDetailsOpen(false)} />}
         </DialogContent>
       </Dialog>
 
       <Dialog open={isCourierFormOpen} onOpenChange={setIsCourierFormOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}</DialogTitle>
-          </DialogHeader>
-          <CourierForm
-            courier={editingCourier}
-            onSave={handleSaveCourier}
-            onCancel={() => {
-              setIsCourierFormOpen(false);
-              setEditingCourier(undefined);
-            }}
-          />
+          <DialogHeader><DialogTitle>{editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}</DialogTitle></DialogHeader>
+          <CourierForm courier={editingCourier} onSave={(data) => { if (editingCourier) { setCouriers(couriers.map(c => c.id === editingCourier.id ? { ...data, id: c.id } : c)) } else { setCouriers([...couriers, { ...data, id: Date.now() }]) } setIsCourierFormOpen(false); setEditingCourier(undefined) }} onCancel={() => { setIsCourierFormOpen(false); setEditingCourier(undefined) }} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Настройки профиля</DialogTitle>
-          </DialogHeader>
-          {currentUser && (
-            <SettingsForm
-              user={currentUser}
-              onUpdate={handleUpdateUser}
-              onDelete={handleDeleteAccount}
-              onCancel={() => setIsSettingsOpen(false)}
-            />
-          )}
+          <DialogHeader><DialogTitle>Настройки профиля</DialogTitle></DialogHeader>
+          {currentUser && <SettingsForm user={currentUser} onUpdate={(data) => { const updatedUsers = users.map(u => u.id === currentUser.id ? { ...u, ...data } : u); setUsers(updatedUsers); setCurrentUser({ ...currentUser, ...data }); setIsSettingsOpen(false); localStorage.setItem('adminhub_auth', JSON.stringify({ ...currentUser, ...data })) }} onDelete={() => { setUsers(users.filter(u => u.id !== currentUser.id)); setIsSettingsOpen(false); setCurrentUser(null); setIsAuthenticated(false); localStorage.removeItem('adminhub_auth') }} onCancel={() => setIsSettingsOpen(false)} />}
         </DialogContent>
       </Dialog>
     </div>
