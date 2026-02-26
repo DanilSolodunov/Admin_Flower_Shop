@@ -16,14 +16,15 @@ import { User, Calendar, Package, CreditCard, MapPin } from 'lucide-react';
 import { Label } from '../ui/label';
 
 interface OrderDetailsProps {
-  order: Order;
+  order: Order | null;
   onAssignCourier: (courier: number) => void;
   onClose: () => void;
 }
 
 export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsProps) {
-  const [selectedCourier, setSelectedCourier] = 
-  React.useState<number | ''>(order.courier ?? '');
+  if (!order) return null;
+  const [selectedCourier, setSelectedCourier] =
+    React.useState<number | ''>(order.courier ?? '');
 
   const handleSaveCourier = () => {
     if (selectedCourier) {
@@ -61,7 +62,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
       </div>
 
       {/* Список товаров */}
-      <Card className="border-slate-200">
+      <Card className="border-slate-200 bg-white">
         <CardHeader className="bg-slate-50/50 pb-3">
           <CardTitle className="text-base flex items-center gap-2 text-slate-800">
             <Package className="w-4 h-4 text-slate-500" />
@@ -111,7 +112,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
       {/* Информация об оплате и доставке */}
       <div className="grid grid-cols-2 gap-4">
         {order.paymentMethod && (
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 bg-white">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <CreditCard className="w-4 h-4 text-slate-400" />
@@ -122,7 +123,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
           </Card>
         )}
 
-        <Card className="border-slate-200">
+        <Card className="border-slate-200 bg-white">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <MapPin className="w-4 h-4 text-slate-400" />
@@ -134,7 +135,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
       </div>
 
       {/* Назначение курьера */}
-      <Card className={`border-slate-200 ${order.status === 'доставлен' ? 'bg-slate-50' : ''}`}>
+      <Card className={`border-slate-200  bg-white ${order.status === 'доставлен' ? 'bg-white' : ''}`}>
         <CardHeader className="bg-slate-50/50 pb-3">
           <CardTitle className="text-base flex items-center gap-2 text-slate-800">
             <User className="w-4 h-4 text-slate-500" />
@@ -169,10 +170,14 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
                 value={selectedCourier}
                 onValueChange={(val) => setSelectedCourier(val === 0 ? "" : val)}
               >
-                <SelectTrigger id="courier-select" className="w-full">
+                <SelectTrigger
+                  id="courier-select"
+                  className="w-full bg-white text-black border border-slate-300 hover:bg-slate-50"
+                >
                   <SelectValue placeholder="Выберите курьера из списка" />
                 </SelectTrigger>
-                <SelectContent>
+
+                <SelectContent className="bg-white text-black border border-slate-300">
                   <SelectItem value="Курьер 1">Курьер 1 (Иванов А.)</SelectItem>
                   <SelectItem value="Курьер 2">Курьер 2 (Петров Б.)</SelectItem>
                   <SelectItem value="Курьер 3">Курьер 3 (Сидоров В.)</SelectItem>
