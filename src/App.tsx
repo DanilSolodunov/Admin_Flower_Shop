@@ -107,7 +107,7 @@ export default function App() {
     products: (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-1g font-bold text-white">
             Управление товарами
           </h1>
 

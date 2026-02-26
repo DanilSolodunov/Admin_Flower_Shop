@@ -1,4 +1,6 @@
 import { Avatar, AvatarFallback } from '../ui/avatar';
+// import Logo from './resources/icon.png'; 
+import Logo from '../../resources/icon.png';
 
 interface HeaderProps {
   username: string;
@@ -12,9 +14,8 @@ export function Header({ username, onOpenSettings }: HeaderProps) {
   return (
     <header className="bg-gray-900 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
       <div className="flex items-center gap-4">
-        <h2 className="text-white font-semibold text-slate-700">
-          Панель администратора
-        </h2>
+        <img src={Logo} alt="Логотип" className="h-10 w-auto" />
+
       </div>
 
       <div className="flex items-center">
