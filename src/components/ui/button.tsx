@@ -16,6 +16,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'default',
   size = 'md',
   className,
+  type = 'button',
   ...props
 }) => {
   const baseClasses =
@@ -31,11 +32,13 @@ export const Button: React.FC<ButtonProps> = ({
   const sizeClasses: Record<ButtonSize, string> = {
     sm: 'px-2 py-1 text-sm',
     md: 'px-4 py-2',
-    lg: 'px-6 py-3 text-sm',
+    lg: 'px-6 py-3 text-lg',
   };
 
   return (
     <button
+    type={type}
+    onClick={() => console.log("button clicked")}
       className={clsx(baseClasses, variantClasses[variant], sizeClasses[size], className)}
       {...props}
     >

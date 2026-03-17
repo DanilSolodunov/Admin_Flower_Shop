@@ -110,9 +110,9 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
       </Card>
 
       {/* Информация об оплате и доставке */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="flex gap-4 w-full">
         {order.paymentMethod && (
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200 bg-white flex-1 min-w-0">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <CreditCard className="w-4 h-4 text-slate-400" />
@@ -123,7 +123,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
           </Card>
         )}
 
-        <Card className="border-slate-200 bg-white">
+        <Card className="border-slate-200 bg-white flex-1 min-w-0">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <MapPin className="w-4 h-4 text-slate-400" />

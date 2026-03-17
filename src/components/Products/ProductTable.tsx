@@ -78,8 +78,8 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
               </div>
 
               {/* Описание */}
-              <div className="mb-2">
-                <div className="text-sm text-slate-200 font-medium line-clamp-2">
+              <div className="mb-2 h-[40px]">
+                <div className="text-sm text-slate-200 font-medium line-clamp-2 break-all">
                   {product.description}
                 </div>
               </div>
@@ -92,11 +92,10 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
               {/* Количество */}
               <div className="mb-4">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    product.amount > 0
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.amount > 0
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
-                  }`}
+                    }`}
                 >
                   {product.amount} шт.
                 </span>

@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback } from '../ui/avatar';
 // import Logo from './resources/icon.png'; 
-import Logo from '../../resources/icon.png';
+import Logo from '../../resources/logo.png';
 
 interface HeaderProps {
   username: string;
