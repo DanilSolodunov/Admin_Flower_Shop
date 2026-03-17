@@ -1,4 +1,3 @@
-//../components/Orders
 import { useState } from 'react';
 import { Order } from '../../types/Order';
 import { Button } from '../ui/button';
@@ -18,7 +17,7 @@ interface CloseOrderFormProps {
     orderId: number,
     status: Order['status'],
     paymentMethod: 'наличный расчет' | 'online',
-    courier: number,
+    courier: string | null,
     reason: string
   ) => void;
   onCancel: () => void;
@@ -38,8 +37,8 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
   const [reason, setReason] = useState('');
   const [status, setStatus] = useState<Order['status']>('доставлен');
   const [paymentMethod, setPaymentMethod] =
-  useState<'наличный расчет' | 'online'>('наличный расчет');
-  const [courier, setCourier] = useState(order.courier || 1);
+    useState<'наличный расчет' | 'online'>('наличный расчет');
+  const [courier, setCourier] = useState<string | null>(order.courier ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
@@ -107,7 +106,6 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
           <Label>Способ оплаты *</Label>
           <RadioGroup
             value={paymentMethod}
-            // onValueChange={(value: 'наличный расчет' | 'online') => setPaymentMethod(value)}
             onValueChange={(value) =>
               setPaymentMethod(value as 'наличный расчет' | 'online')
             }
@@ -132,7 +130,7 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
         {/* Курьер (оставляем для удобства) */}
         <div className="space-y-2">
           <Label htmlFor="courier">Курьер</Label>
-          <Select value={courier} onValueChange={setCourier}>
+          <Select value={courier ?? ''} onValueChange={(val) => setCourier(val || null)}>
             <SelectTrigger id="courier">
               <SelectValue />
             </SelectTrigger>
@@ -140,6 +138,7 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
               <SelectItem value="Курьер 1">Курьер 1</SelectItem>
               <SelectItem value="Курьер 2">Курьер 2</SelectItem>
               <SelectItem value="Курьер 3">Курьер 3</SelectItem>
+              <SelectItem value="">Не назначен</SelectItem>
             </SelectContent>
           </Select>
         </div>

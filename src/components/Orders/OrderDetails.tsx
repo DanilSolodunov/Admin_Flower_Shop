@@ -1,30 +1,21 @@
-//..components/Orders
 import React from 'react';
 import { Order } from '../../types/Order';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Table } from '../ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { User, Calendar, Package, CreditCard, MapPin } from 'lucide-react';
 import { Label } from '../ui/label';
 
 interface OrderDetailsProps {
   order: Order | null;
-  onAssignCourier: (courier: number) => void;
+  onAssignCourier: (courier: string) => void;
   onClose: () => void;
 }
 
 export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsProps) {
   if (!order) return null;
-  const [selectedCourier, setSelectedCourier] =
-    React.useState<number | ''>(order.courier ?? '');
+  const [selectedCourier, setSelectedCourier] = React.useState<string | ''>(order.courier ?? '');
 
   const handleSaveCourier = () => {
     if (selectedCourier) {
@@ -74,13 +65,13 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
             <p className="text-slate-500 text-sm py-4 text-center">Список товаров пуст</p>
           ) : (
             <div className="space-y-4">
-              {order.products.map((item, index) => (
+              {order.products.map((product, index) => (
                 <div key={index} className="flex justify-between items-start gap-4">
                   <div className="flex items-center gap-3 flex-1">
                     <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
                       <img
-                        src={item.product.imageurl}
-                        alt={item.product.description}
+                        src={product.imageurl}
+                        alt={product.description}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
@@ -88,14 +79,13 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">{item.product.description}</p>
-                      <p className="text-xs text-slate-500">{item.product.price.toLocaleString()} ₽ / шт.</p>
+                      <p className="text-sm font-medium text-slate-900 truncate">{product.description}</p>
+                      <p className="text-xs text-slate-500">{product.price.toLocaleString()} ₽</p>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-medium text-slate-600">x{item.quantity}</p>
                     <p className="text-sm font-bold text-slate-900 mt-1">
-                      {(item.product.price * item.quantity).toLocaleString()} ₽
+                      {product.price.toLocaleString()} ₽
                     </p>
                   </div>
                 </div>
@@ -168,7 +158,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
               </Label>
               <Select
                 value={selectedCourier}
-                onValueChange={(val) => setSelectedCourier(val === 0 ? "" : val)}
+                onValueChange={(val) => setSelectedCourier(val === '0' ? "" : val)}
               >
                 <SelectTrigger
                   id="courier-select"
@@ -181,7 +171,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
                   <SelectItem value="Курьер 1">Курьер 1 (Иванов А.)</SelectItem>
                   <SelectItem value="Курьер 2">Курьер 2 (Петров Б.)</SelectItem>
                   <SelectItem value="Курьер 3">Курьер 3 (Сидоров В.)</SelectItem>
-                  <SelectItem value={0}>Не назначен</SelectItem>
+                  <SelectItem value="0">Не назначен</SelectItem>
                 </SelectContent>
               </Select>
               <div className="flex gap-2">
@@ -192,11 +182,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
                 >
                   Сохранить
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={onClose}
-                  className="flex-1"
-                >
+                <Button variant="outline" onClick={onClose} className="flex-1">
                   Закрыть
                 </Button>
               </div>
