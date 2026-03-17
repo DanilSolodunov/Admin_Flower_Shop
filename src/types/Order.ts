@@ -1,10 +1,12 @@
+import { Product } from "./Product";
+
 export interface Order {
   id: number;
-  products: { product: any; quantity: number }[];
+  products: Product[];
   total: number;
   status: string;
   date: string;
   paymentMethod: 'наличный расчет' | 'online' | null;
-  courier: number | null;
-  reason?: string; // Новое поле: причина закрытия
+  courier: string | null;
+  reason?: string; 
 }

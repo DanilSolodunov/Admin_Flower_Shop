@@ -47,7 +47,7 @@ export function RevenueReport({ orders }: RevenueReportProps) {
         end = endOfDay(now);
         break;
       case 'week':
-        start = startOfWeek(now, { weekStartsOn: 1 }); 
+        start = startOfWeek(now, { weekStartsOn: 1 });
         end = endOfWeek(now, { weekStartsOn: 1 });
         break;
       case 'month':
@@ -59,8 +59,8 @@ export function RevenueReport({ orders }: RevenueReportProps) {
         end = endOfYear(now);
         break;
       case 'all':
-        start = new Date(0); 
-        end = new Date(); 
+        start = new Date(0);
+        end = new Date();
         break;
       default:
         start = startOfDay(now);
@@ -132,17 +132,17 @@ export function RevenueReport({ orders }: RevenueReportProps) {
         <CardContent>
           <div className="flex flex-col gap-6">
             <RadioGroup
-  value={period}
-  onValueChange={(value) => setPeriod(value as PeriodType)}
->
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-    <RadioGroupItem value="day">День</RadioGroupItem>
-    <RadioGroupItem value="week">Неделя</RadioGroupItem>
-    <RadioGroupItem value="month">Месяц</RadioGroupItem>
-    <RadioGroupItem value="year">Год</RadioGroupItem>
-    <RadioGroupItem value="all">Все время</RadioGroupItem>
-  </div>
-</RadioGroup>
+              value={period}
+              onValueChange={(value) => setPeriod(value as PeriodType)}
+            >
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <RadioGroupItem value="day">День</RadioGroupItem>
+                <RadioGroupItem value="week">Неделя</RadioGroupItem>
+                <RadioGroupItem value="month">Месяц</RadioGroupItem>
+                <RadioGroupItem value="year">Год</RadioGroupItem>
+                <RadioGroupItem value="all">Все время</RadioGroupItem>
+              </div>
+            </RadioGroup>
 
           </div>
         </CardContent>
@@ -153,14 +153,12 @@ export function RevenueReport({ orders }: RevenueReportProps) {
       {/* Метрики */}
       <div className="grid gap-4 md:grid-cols-3">
         {/* Общая выручка */}
-        {/* <Card className="border-slate-200 bg-gradient-to-br from-blue-50 to-white"> */}
         <Card className="bg-gradient-to-br from-blue-800/40 to-slate-900 border border-blue-800/40">
 
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">
               Общая выручка
             </CardTitle>
-            {/* <DollarSign className="h-4 w-4 text-blue-600" /> */}
             <DollarSign className="h-4 w-4 text-blue-400" />
 
           </CardHeader>
@@ -175,7 +173,6 @@ export function RevenueReport({ orders }: RevenueReportProps) {
         </Card>
 
         {/* Количество заказов */}
-        {/* <Card className="border-slate-50 bg-gradient-to-br from-emerald-50 to-orders"> */}
         <Card className="bg-gradient-to-br from-emerald-800/40 to-slate-900 border border-emerald-800/40">
 
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -195,14 +192,12 @@ export function RevenueReport({ orders }: RevenueReportProps) {
         </Card>
 
         {/* Средний чек */}
-        {/* <Card className="border-slate-200 bg-gradient-to-br from-violet-50 to-white"> */}
         <Card className="bg-gradient-to-br from-violet-800/40 to-slate-900 border border-violet-800/40">
 
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">
               Средний чек
             </CardTitle>
-            {/* <TrendingUp className="h-4 w-4 text-violet-600" /> */}
             <TrendingUp className="h-4 w-4 text-violet-400" />
 
           </CardHeader>
@@ -234,27 +229,37 @@ export function RevenueReport({ orders }: RevenueReportProps) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200">
-                    <th className="text-left py-3 px-4 font-medium text-slate-600">ID Заказа</th>
-                    <th className="text-left py-3 px-4 font-medium text-slate-600">Дата</th>
-                    <th className="text-left py-3 px-4 font-medium text-slate-600">Способ оплаты</th>
-                    <th className="text-left py-3 px-4 font-medium text-slate-600">Курьер</th>
-                    <th className="text-right py-3 px-4 font-medium text-slate-600">Сумма</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-400">Дата</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-400">Способ оплаты</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-400">Курьер</th>
+                    <th className="text-right py-3 px-4 font-medium text-slate-400">Сумма</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {reportData.filteredOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
-                      <td className="py-3 px-4 font-medium text-slate-900">{order.id}</td>
-                      <td className="py-3 px-4 text-slate-600">
-                        {format(new Date(order.date), 'd MMM yyyy', { locale: ru })}
-                      </td>
-                      <td className="py-3 px-4 text-slate-600 capitalize">{order.paymentMethod}</td>
-                      <td className="py-3 px-4 text-slate-600">{order.courier || '-'}</td>
-                      <td className="py-3 px-4 text-right font-medium text-slate-900">
-                        {formatCurrency(order.total)}
-                      </td>
-                    </tr>
-                  ))}
+                  {reportData.filteredOrders.map((order) => {
+                    const orderTotal = order.total ?? order.products.reduce(
+                      (sum, product) => sum + product.price * product.amount,
+                      0
+                    );
+
+                    return (
+                      <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="py-3 px-4 text-slate-400">
+                          {format(new Date(order.date), 'd MMM yyyy', { locale: ru })}
+                        </td>
+                        <td className="py-3 px-4 text-slate-400 capitalize">
+                          {order.paymentMethod || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-slate-400">
+                          {order.courier || '-'}
+                        </td>
+
+                        <td className="py-3 px-4 text-slate-400">
+                          {formatCurrency(orderTotal)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

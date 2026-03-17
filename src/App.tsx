@@ -27,7 +27,6 @@ const menuItems = [
 ];
 
 export default function App() {
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
@@ -42,9 +41,91 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // === Временные заглушки заказов ===
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('adminhub_orders');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) return JSON.parse(saved);
+
+    // Тестовые заказы
+    return [
+      {
+        id: 1001,
+        date: new Date().toISOString(),
+        status: 'ожидает',
+        total: 3200,
+        courier: null,
+        paymentMethod: 'online',
+        products: [
+          { product: { id: 1, description: 'Букет роз красных', price: 1600, imageurl: 'https://images.unsplash.com/photo-1548095115-45697e72b73d' }, quantity: 2 }
+        ]
+      },
+      {
+        id: 1002,
+        date: new Date().toISOString(),
+        status: 'собирается',
+        total: 2100,
+        courier: 'Курьер 1',
+        paymentMethod: 'наличный расчет',
+        products: [
+          { product: { id: 2, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 }
+        ]
+      },
+      {
+        id: 1003,
+        date: new Date().toISOString(),
+        status: 'отправлен',
+        total: 4500,
+        courier: 'Курьер 2',
+        paymentMethod: 'online',
+        products: [
+          { product: { id: 3, description: 'Пионовый букет', price: 1500, imageurl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93' }, quantity: 3 }
+        ]
+      },
+      {
+        id: 1004,
+        date: '2026-03-16T09:00:00.000Z',
+        status: 'доставлен',
+        total: 1800,
+        courier: 'Курьер 3',
+        paymentMethod: 'наличный расчет',
+        products: [
+          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
+        ]
+      },
+      {
+        id: 1006,
+        date: '2026-03-16T09:00:00.000Z',
+        status: 'доставлен',
+        total: 3700,
+        courier: 'Курьер 1',
+        paymentMethod: 'наличный расчет',
+        products: [
+          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
+        ]
+      },
+      {
+        id: 1007,
+        date: '2026-02-10T09:00:00.000Z',
+        status: 'доставлен',
+        total: 5200,
+        courier: 'Курьер 2',
+        paymentMethod: 'online',
+        products: [
+          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
+        ]
+      },
+      {
+        id: 1063,
+        date: '2026-01-09T09:00:00.000Z',
+        status: 'доставлен',
+        total: 9800,
+        courier: 'Курьер 1',
+        paymentMethod: 'online',
+        products: [
+          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
+        ]
+      }
+    ];
   });
 
   const [couriers, setCouriers] = useState<Courier[]>(() => {
@@ -134,7 +215,7 @@ export default function App() {
           </h1>
 
           <Button
-          size="sm"
+            size="sm"
             onClick={() => {
               setEditingProduct(undefined);
               setIsProductFormOpen(true);
@@ -170,6 +251,20 @@ export default function App() {
           }}
           showActions
         />
+
+        {/* Кнопка сброса тестовых данных */}
+        <div className="pt-4">
+          <Button
+            size="sm"
+            className="bg-gray-500 hover:bg-gray-600"
+            onClick={() => {
+              localStorage.removeItem('adminhub_orders');
+              window.location.reload();
+            }}
+          >
+            Сбросить тестовые заказы
+          </Button>
+        </div>
       </div>
     ),
 
@@ -219,24 +314,12 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
-      {/* основной контент */}
-      <main
-        className="flex-1 overflow-auto p-6"
-        style={{
-          paddingBottom: '120px'
-        }}
-      >
+      <main className="flex-1 overflow-auto p-6" style={{ paddingBottom: '120px' }}>
         {views[currentView]}
       </main>
 
-      {/* нижнее меню */}
-      <nav
-        className="fixed bottom-0 left-0 w-full bg-slate-800 border-t border-slate-700 flex justify-around items-center z-50"
-        style={{
-          paddingBottom: 'env(safe-area-inset-bottom)',
-          paddingTop: '8px'
-        }}
-      >
+      <nav className="fixed bottom-0 left-0 w-full bg-slate-800 border-t border-slate-700 flex justify-around items-center z-50"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)', paddingTop: '8px' }}>
         {menuItems.map(item => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
@@ -245,10 +328,7 @@ export default function App() {
             <button
               key={item.id}
               onClick={() => setCurrentView(item.id)}
-              className={`flex flex-col items-center text-xs transition-colors ${isActive
-                  ? 'text-blue-500'
-                  : 'text-slate-300 hover:text-white'
-                }`}
+              className={`flex flex-col items-center text-xs transition-colors ${isActive ? 'text-blue-500' : 'text-slate-300 hover:text-white'}`}
             >
               <Icon className="w-6 h-6 mb-1" />
               <span>{item.label}</span>
@@ -256,48 +336,113 @@ export default function App() {
           );
         })}
       </nav>
-
-   <Dialog open={isProductFormOpen} onOpenChange={setIsProductFormOpen}>
-  <DialogContent>
-    <ProductForm
-      product={editingProduct}
-      onSave={(product) => {
-        setProducts([...products, { ...product, id: Date.now() }]);
-        setIsProductFormOpen(false);
-      }}
-      onCancel={() => setIsProductFormOpen(false)}
-    />
-  </DialogContent>
-</Dialog>
-
-       <Dialog open={isCloseOrderFormOpen} onOpenChange={setIsCloseOrderFormOpen}>
-         <DialogContent className="sm:max-w-md">
-           <DialogHeader><DialogTitle>Закрыть заказ</DialogTitle></DialogHeader>
-           {closingOrder && <CloseOrderForm order={closingOrder} onClose={(id, status, paymentMethod, courier, reason) => { setOrders(orders.map(o => o.id === id ? { ...o, status, paymentMethod, courier, reason } : o)); setIsCloseOrderFormOpen(false); setClosingOrder(undefined) }} onCancel={() => { setIsCloseOrderFormOpen(false); setClosingOrder(undefined) }} />}
-         </DialogContent>
-       </Dialog>
-
-       <Dialog open={isOrderDetailsOpen} onOpenChange={setIsOrderDetailsOpen}>
-         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-           <DialogHeader><DialogTitle>Детали заказа</DialogTitle></DialogHeader>
-           {viewingOrder && <OrderDetails order={viewingOrder} onAssignCourier={(c) => { setOrders(orders.map(o => o.id === viewingOrder.id ? { ...o, courier: c } : o)) }} onClose={() => setIsOrderDetailsOpen(false)} />}
-         </DialogContent>
-       </Dialog>
-
-       <Dialog open={isCourierFormOpen} onOpenChange={setIsCourierFormOpen}>
-         <DialogContent className="sm:max-w-md">
-           <DialogHeader><DialogTitle>{editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}</DialogTitle></DialogHeader>
-           <CourierForm courier={editingCourier} onSave={(data) => { if (editingCourier) { setCouriers(couriers.map(c => c.id === editingCourier.id ? { ...data, id: c.id } : c)) } else { setCouriers([...couriers, { ...data, id: Date.now() }]) } setIsCourierFormOpen(false); setEditingCourier(undefined) }} onCancel={() => { setIsCourierFormOpen(false); setEditingCourier(undefined) }} />
-         </DialogContent>
+      <Dialog open={isProductFormOpen} onOpenChange={setIsProductFormOpen}>
+        <DialogContent>
+          <ProductForm
+            product={editingProduct}
+            onSave={(product) => {
+              setProducts([...products, { ...product, id: Date.now() }]);
+              setIsProductFormOpen(false);
+            }}
+            onCancel={() => setIsProductFormOpen(false)}
+          />
+        </DialogContent>
       </Dialog>
 
-       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-         <DialogContent className="sm:max-w-md">
-           <DialogHeader><DialogTitle>Настройки профиля</DialogTitle></DialogHeader>
-           {currentUser && <SettingsForm user={currentUser} onUpdate={(data) => { const updatedUsers = users.map(u => u.id === currentUser.id ? { ...u, ...data } : u); setUsers(updatedUsers); setCurrentUser({ ...currentUser, ...data }); setIsSettingsOpen(false); localStorage.setItem('adminhub_auth', JSON.stringify({ ...currentUser, ...data })) }} onDelete={() => { setUsers(users.filter(u => u.id !== currentUser.id)); setIsSettingsOpen(false); setCurrentUser(null); setIsAuthenticated(false); localStorage.removeItem('adminhub_auth') }} onCancel={() => setIsSettingsOpen(false)} />}
-         </DialogContent>
-       </Dialog>
+      <Dialog open={isCloseOrderFormOpen} onOpenChange={setIsCloseOrderFormOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Закрыть заказ</DialogTitle></DialogHeader>
+          {closingOrder && (
+            <CloseOrderForm
+              order={closingOrder}
+              onClose={(id, status, paymentMethod, courier, reason) => {
+                const courierString = String(courier);
+                setOrders(orders.map(o =>
+                  o.id === id ? { ...o, status, paymentMethod, courier: courierString, reason } : o
+                ));
+                setIsCloseOrderFormOpen(false);
+                setClosingOrder(undefined);
+              }}
+              onCancel={() => {
+                setIsCloseOrderFormOpen(false);
+                setClosingOrder(undefined);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
+      <Dialog open={isOrderDetailsOpen} onOpenChange={setIsOrderDetailsOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Детали заказа</DialogTitle></DialogHeader>
+          {viewingOrder && (
+            <OrderDetails
+              order={viewingOrder}
+              onAssignCourier={(c) => {
+                const courierString = String(c);
+                setOrders(orders.map(o =>
+                  o.id === viewingOrder.id ? { ...o, courier: courierString } : o
+                ));
+              }}
+              onClose={() => setIsOrderDetailsOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCourierFormOpen} onOpenChange={setIsCourierFormOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}</DialogTitle>
+          </DialogHeader>
+          <CourierForm
+            courier={editingCourier}
+            onSave={(data) => {
+              if (editingCourier) {
+                setCouriers(couriers.map(c =>
+                  c.id === editingCourier.id ? { ...data, id: c.id } : c
+                ));
+              } else {
+                setCouriers([...couriers, { ...data, id: Date.now() }]);
+              }
+              setIsCourierFormOpen(false);
+              setEditingCourier(undefined);
+            }}
+            onCancel={() => {
+              setIsCourierFormOpen(false);
+              setEditingCourier(undefined);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Настройки профиля</DialogTitle></DialogHeader>
+          {currentUser && (
+            <SettingsForm
+              user={currentUser}
+              onUpdate={(data) => {
+                const updatedUsers = users.map(u =>
+                  u.id === currentUser.id ? { ...u, ...data } : u
+                );
+                setUsers(updatedUsers);
+                setCurrentUser({ ...currentUser, ...data });
+                setIsSettingsOpen(false);
+                localStorage.setItem('adminhub_auth', JSON.stringify({ ...currentUser, ...data }));
+              }}
+              onDelete={() => {
+                setUsers(users.filter(u => u.id !== currentUser.id));
+                setIsSettingsOpen(false);
+                setCurrentUser(null);
+                setIsAuthenticated(false);
+                localStorage.removeItem('adminhub_auth');
+              }}
+              onCancel={() => setIsSettingsOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
