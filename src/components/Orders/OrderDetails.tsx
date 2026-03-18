@@ -1,5 +1,6 @@
 import React from 'react';
 import { Order } from '../../types/Order';
+import { Product } from '../../types/Product';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -65,31 +66,47 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
             <p className="text-slate-500 text-sm py-4 text-center">Список товаров пуст</p>
           ) : (
             <div className="space-y-4">
-              {order.products.map((product, index) => (
-                <div key={index} className="flex justify-between items-start gap-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
-                      <img
-                        src={product.imageurl}
-                        alt={product.description}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
+              {order.products.map((item, index) => {
+                const itemAny = item as unknown;
+
+                const hasWrapper = (itemAny as any).product !== undefined;
+
+                const product: Product = hasWrapper
+                  ? ((itemAny as { product: Product; quantity: number }).product)
+                  : (itemAny as Product);
+
+                const quantity: number = hasWrapper
+                  ? (itemAny as { product: Product; quantity: number }).quantity
+                  : 1;
+
+                return (
+                  <div key={index} className="flex justify-between items-start gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
+                        {product?.imageurl && (
+                          <img
+                            src={product.imageurl}
+                            alt={product.description || ''}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">{product?.description || '—'}</p>
+                        <p className="text-xs text-slate-500">
+                          {product?.price?.toLocaleString() ?? '0'} ₽ × {quantity}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">{product.description}</p>
-                      <p className="text-xs text-slate-500">{product.price.toLocaleString()} ₽</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
+                        {(product?.price ?? 0 * quantity).toLocaleString()} ₽
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-slate-900 mt-1">
-                      {product.price.toLocaleString()} ₽
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           <div className="mt-6 pt-4 border-t border-slate-200 flex justify-between items-center">

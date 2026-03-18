@@ -97,6 +97,7 @@ export function OrderTable({
                       size="sm"
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                       onClick={() => {
+                        console.log("clicked");
                         setSelectedOrder(order);
                         setDetailsOpen(true); // открываем Dialog
                       }}
