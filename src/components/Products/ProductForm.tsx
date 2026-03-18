@@ -74,19 +74,19 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   return (
     <div className="w-full max-w-md mx-auto px-4 sm:px-6">
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const productToSave: Product = {
-            id: product?.id || Date.now(),
-            imageurl: formData.imageurl,
-            description: formData.description || "",
-            price: Number(formData.price),
-            amount: Number(formData.amount),
-          };
-          onSave(productToSave);
-        }}
-      >
+      
+       <form
+  onSubmit={(e) => {
+    e.preventDefault();
+
+    onSave({
+      imageurl: formData.imageurl,
+      description: formData.description || "",
+      price: Number(formData.price),
+      amount: Number(formData.amount),
+    });
+  }}
+>
         ...
         <Button type="submit">
           {product ? 'Сохранить' : 'Добавить'}

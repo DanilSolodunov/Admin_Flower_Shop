@@ -208,25 +208,25 @@ export default function App() {
 
   const views: Record<typeof currentView, React.ReactNode> = {
     products: (
-     <div className="space-y-6">
-  <div>
-    <h1 className="text-2xl font-bold text-white">
-      Управление товаром
-    </h1>
-  </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            Управление товаром
+          </h1>
+        </div>
 
-  <div className="flex justify-end">
-    <Button
-      size="sm"
-      onClick={() => {
-        setEditingProduct(undefined);
-        setIsProductFormOpen(true);
-      }}
-      className="bg-blue-600 hover:bg-blue-700"
-    >
-      Добавить товар
-    </Button>
-  </div>
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingProduct(undefined);
+              setIsProductFormOpen(true);
+            }}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Добавить товар
+          </Button>
+        </div>
 
         <ProductTable
           products={products}
@@ -343,8 +343,18 @@ export default function App() {
           <ProductForm
             product={editingProduct}
             onSave={(product) => {
-              setProducts([...products, { ...product, id: Date.now() }]);
+              if (editingProduct) {
+                setProducts(products.map(p =>
+                  p.id === editingProduct.id
+                    ? { ...p, ...product }
+                    : p
+                ));
+              } else {
+                setProducts([...products, { ...product, id: Date.now() }]);
+              }
+
               setIsProductFormOpen(false);
+              setEditingProduct(undefined);
             }}
             onCancel={() => setIsProductFormOpen(false)}
           />
