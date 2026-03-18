@@ -93,8 +93,8 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
               <div className="mb-4">
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.amount > 0
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
                     }`}
                 >
                   {product.amount} шт.
@@ -128,32 +128,42 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
 
       {/* Пагинация */}
       {totalPages > 1 && (
-        <div className="bg-white mt-6 px-6 py-4 border-t border-slate-200 flex items-center justify-between rounded-lg">
-          <div className="text-sm text-slate-700">
+        <div className="bg-slate-900 mt-6 px-6 py-4 border-t border-slate-200 flex items-center justify-between rounded-lg">
+
+          <div className="text-sm text-slate-200">
             Показано с <span className="font-medium">{startIndex + 1}</span> по{' '}
             <span className="font-medium">
               {Math.min(endIndex, products.length)}
             </span>{' '}
             из <span className="font-medium">{products.length}</span> товаров
           </div>
+
           <div className="flex items-center gap-2">
+
+            {/* Назад */}
             <Button
-              variant="outline"
+            variant="outline"
               size="sm"
               onClick={() =>
                 setCurrentPage((prev) => Math.max(prev - 1, 1))
               }
               disabled={currentPage === 1}
+              className={
+                currentPage === 1
+                  ? "bg-slate-900 text-slate-400 border-slate-700"
+                  : "bg-slate-200 text-slate-700 hover:bg-slate-200"
+              }
             >
               Назад
             </Button>
 
-            <span className="text-sm text-slate-700 px-2">
+            <span className="text-sm text-slate-200 px-2">
               Страница {currentPage} из {totalPages}
             </span>
 
+            {/* Вперед */}
             <Button
-              variant="outline"
+            variant="outline"
               size="sm"
               onClick={() =>
                 setCurrentPage((prev) =>
@@ -161,6 +171,11 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
                 )
               }
               disabled={currentPage === totalPages}
+              className={
+                currentPage === totalPages
+                  ? "bg-slate-900 text-slate-400 border-slate-700"
+                  : "bg-slate-200 text-slate-900"
+              }
             >
               Вперед
             </Button>

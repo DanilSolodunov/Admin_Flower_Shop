@@ -28,6 +28,7 @@ export function CourierList({ couriers, onEdit, onDelete, onAdd }: CourierListPr
           <p className="text-sm text-slate-200">Управление персоналом доставки</p>
         </div>
         <Button 
+        size='sm'
           onClick={onAdd}
           className="bg-blue-600 hover:bg-blue-700"
         >

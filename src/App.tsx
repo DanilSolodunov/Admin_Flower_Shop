@@ -208,23 +208,25 @@ export default function App() {
 
   const views: Record<typeof currentView, React.ReactNode> = {
     products: (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-1g font-bold text-white">
-            Управление товарами
-          </h1>
+     <div className="space-y-6">
+  <div>
+    <h1 className="text-2xl font-bold text-white">
+      Управление товаром
+    </h1>
+  </div>
 
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingProduct(undefined);
-              setIsProductFormOpen(true);
-            }}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Добавить товар
-          </Button>
-        </div>
+  <div className="flex justify-end">
+    <Button
+      size="sm"
+      onClick={() => {
+        setEditingProduct(undefined);
+        setIsProductFormOpen(true);
+      }}
+      className="bg-blue-600 hover:bg-blue-700"
+    >
+      Добавить товар
+    </Button>
+  </div>
 
         <ProductTable
           products={products}

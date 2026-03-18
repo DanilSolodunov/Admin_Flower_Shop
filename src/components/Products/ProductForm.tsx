@@ -140,6 +140,8 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
             <Input
               id="price"
               type="number"
+              max={9000}
+              min={0}
               value={formData.price}
               onChange={(e) => handleChange('price', e.target.value)}
             />
@@ -150,6 +152,8 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
             <Input
               id="amount"
               type="number"
+              max={9000}
+              min={0}
               value={formData.amount}
               onChange={(e) => handleChange('amount', e.target.value)}
             />
