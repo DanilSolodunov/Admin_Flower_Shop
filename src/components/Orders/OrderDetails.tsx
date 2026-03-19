@@ -16,6 +16,7 @@ interface OrderDetailsProps {
 
 export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsProps) {
   if (!order) return null;
+  console.log("ORDER:", order)
   const [selectedCourier, setSelectedCourier] = React.useState<string | ''>(order.courier ?? '');
 
   const handleSaveCourier = () => {
@@ -36,7 +37,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 max-w-full sm:max-w-md mx-auto">
       {/* Заголовок и статус */}
       <div className="flex justify-between items-start pb-4 border-b border-slate-100">
         <div>
@@ -54,10 +55,10 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
       </div>
 
       {/* Список товаров */}
-      <Card className="border-slate-200 bg-white">
+      <Card className="border-slate-900 bg-white">
         <CardHeader className="bg-slate-50/50 pb-3">
-          <CardTitle className="text-base flex items-center gap-2 text-slate-800">
-            <Package className="w-4 h-4 text-slate-500" />
+          <CardTitle className="text-base flex items-center gap-2 !text-black">
+            <Package className="w-4 h-4 !text-slate-900" />
             Состав заказа
           </CardTitle>
         </CardHeader>
@@ -65,23 +66,20 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
           {order.products.length === 0 ? (
             <p className="text-slate-500 text-sm py-4 text-center">Список товаров пуст</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-x-auto">
               {order.products.map((item, index) => {
                 const itemAny = item as unknown;
-
                 const hasWrapper = (itemAny as any).product !== undefined;
-
                 const product: Product = hasWrapper
                   ? ((itemAny as { product: Product; quantity: number }).product)
                   : (itemAny as Product);
-
                 const quantity: number = hasWrapper
                   ? (itemAny as { product: Product; quantity: number }).quantity
                   : 1;
 
                 return (
                   <div key={index} className="flex justify-between items-start gap-4">
-                    <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
                         {product?.imageurl && (
                           <img
@@ -101,7 +99,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-sm font-bold text-slate-900 mt-1">
-                        {(product?.price ?? 0 * quantity).toLocaleString()} ₽
+                        {((product?.price ?? 0) * quantity).toLocaleString()} ₽
                       </p>
                     </div>
                   </div>
@@ -109,7 +107,22 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
               })}
             </div>
           )}
-          <div className="mt-6 pt-4 border-t border-slate-200 flex justify-between items-center">
+        </CardContent>
+
+        {/* Адрес доставки */}
+        <CardContent className="pt-4">
+           <div className="mt-4 p-3 bg-slate-50 rounded border border-slate-200 text-sm text-slate-700">
+    <span className="flex items-center gap-1">
+      <MapPin className="w-4 h-4 text-slate-500" />
+      Адрес доставки:{' '}
+      <span className="text-slate-700">
+        {order.address && order.address.trim() !== '' ? order.address : 'Адрес не указан'}
+      </span>
+    </span>
+  </div>
+
+          {/* Итоговая сумма */}
+          <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center">
             <span className="font-semibold text-slate-700">Итого к оплате:</span>
             <span className="text-2xl font-bold text-slate-900">{order.total.toLocaleString()} ₽</span>
           </div>
@@ -117,7 +130,7 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
       </Card>
 
       {/* Информация об оплате и доставке */}
-      <div className="flex gap-4 w-full">
+      <div className="flex flex-col sm:flex-row gap-4 w-full">
         {order.paymentMethod && (
           <Card className="border-slate-200 bg-white flex-1 min-w-0">
             <CardContent className="pt-6">
@@ -142,9 +155,9 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
       </div>
 
       {/* Назначение курьера */}
-      <Card className={`border-slate-200  bg-white ${order.status === 'доставлен' ? 'bg-white' : ''}`}>
+      <Card className={`border-slate-200 bg-white`}>
         <CardHeader className="bg-slate-50/50 pb-3">
-          <CardTitle className="text-base flex items-center gap-2 text-slate-800">
+          <CardTitle className="text-base flex items-center gap-2 !text-black">
             <User className="w-4 h-4 text-slate-500" />
             Курьер
           </CardTitle>
@@ -164,13 +177,13 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
             </div>
           ) : (
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
-              <p className="text-sm text-slate-500">Курьер еще не назначен</p>
+              <p className="text-sm text-slate-900">Курьер еще не назначен</p>
             </div>
           )}
 
           {order.status !== 'доставлен' && (
             <div className="space-y-3 pt-2">
-              <Label htmlFor="courier-select" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="courier-select" className="text-sm flex items-center gap-2 !text-black">
                 {order.courier ? 'Сменить курьера' : 'Назначить курьера'}
               </Label>
               <Select
@@ -184,14 +197,15 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
                   <SelectValue placeholder="Выберите курьера из списка" />
                 </SelectTrigger>
 
-                <SelectContent className="bg-white text-black border border-slate-300">
+                <SelectContent className="bg-white text-slate-900 border border-slate-300">
                   <SelectItem value="Курьер 1">Курьер 1 (Иванов А.)</SelectItem>
                   <SelectItem value="Курьер 2">Курьер 2 (Петров Б.)</SelectItem>
                   <SelectItem value="Курьер 3">Курьер 3 (Сидоров В.)</SelectItem>
                   <SelectItem value="0">Не назначен</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex gap-2">
+
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   onClick={handleSaveCourier}
                   disabled={!selectedCourier}

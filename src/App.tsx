@@ -41,22 +41,27 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // === Временные заглушки заказов ===
+  // === Заглушки заказов ===
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('adminhub_orders');
     if (saved) return JSON.parse(saved);
 
-    // Тестовые заказы
     return [
       {
         id: 1001,
         date: new Date().toISOString(),
         status: 'ожидает',
-        total: 3200,
+        total: 15800,
         courier: null,
         paymentMethod: 'online',
+        address: 'г. Белореченск ул. Ленина 120',
         products: [
-          { product: { id: 1, description: 'Букет роз красных', price: 1600, imageurl: 'https://images.unsplash.com/photo-1548095115-45697e72b73d' }, quantity: 2 }
+          { product: { id: 1, description: 'Букет роз красных', price: 1600, imageurl: 'https://images.unsplash.com/photo-1548095115-45697e72b73d' }, quantity: 2 },
+          { product: { id: 2, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 },
+          { product: { id: 3, description: 'Пионовый букет', price: 1500, imageurl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93' }, quantity: 3 },
+          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 },
+          { product: { id: 5, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 },
+          { product: { id: 6, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 }
         ]
       },
       {
@@ -66,6 +71,7 @@ export default function App() {
         total: 2100,
         courier: 'Курьер 1',
         paymentMethod: 'наличный расчет',
+        address: 'г. Белореченск ул. Мира 10',
         products: [
           { product: { id: 2, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 }
         ]
@@ -77,6 +83,7 @@ export default function App() {
         total: 4500,
         courier: 'Курьер 2',
         paymentMethod: 'online',
+        address: 'г. Майкоп ул. Ленина 20',
         products: [
           { product: { id: 3, description: 'Пионовый букет', price: 1500, imageurl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93' }, quantity: 3 }
         ]
@@ -88,39 +95,7 @@ export default function App() {
         total: 1800,
         courier: 'Курьер 3',
         paymentMethod: 'наличный расчет',
-        products: [
-          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
-        ]
-      },
-      {
-        id: 1006,
-        date: '2026-03-16T09:00:00.000Z',
-        status: 'доставлен',
-        total: 3700,
-        courier: 'Курьер 1',
-        paymentMethod: 'наличный расчет',
-        products: [
-          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
-        ]
-      },
-      {
-        id: 1007,
-        date: '2026-02-10T09:00:00.000Z',
-        status: 'доставлен',
-        total: 5200,
-        courier: 'Курьер 2',
-        paymentMethod: 'online',
-        products: [
-          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
-        ]
-      },
-      {
-        id: 1063,
-        date: '2026-01-09T09:00:00.000Z',
-        status: 'доставлен',
-        total: 9800,
-        courier: 'Курьер 1',
-        paymentMethod: 'online',
+        address: 'г. Майкоп ул. Пролетарская 230',
         products: [
           { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
         ]
@@ -209,11 +184,7 @@ export default function App() {
   const views: Record<typeof currentView, React.ReactNode> = {
     products: (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Управление товаром
-          </h1>
-        </div>
+        <h1 className="text-2xl font-bold text-white">Управление товаром</h1>
 
         <div className="flex justify-end">
           <Button
@@ -234,9 +205,7 @@ export default function App() {
             setEditingProduct(product);
             setIsProductFormOpen(true);
           }}
-          onDelete={(id) =>
-            setProducts(products.filter((p) => p.id !== id))
-          }
+          onDelete={(id) => setProducts(products.filter((p) => p.id !== id))}
         />
       </div>
     ),
@@ -245,6 +214,7 @@ export default function App() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-white">Новые заказы</h1>
 
+        {/* передаём активные заказы в OrderTable */}
         <OrderTable
           orders={activeOrders}
           onCloseOrder={(o) => {
@@ -254,7 +224,6 @@ export default function App() {
           showActions
         />
 
-        {/* Кнопка сброса тестовых данных */}
         <div className="pt-4">
           <Button
             size="sm"
@@ -274,6 +243,7 @@ export default function App() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-white">Завершенные заказы</h1>
 
+        {/* передаём завершённые заказы в OrderTable */}
         <OrderTable
           orders={completedOrders}
           onCloseOrder={() => { }}
@@ -289,9 +259,7 @@ export default function App() {
         <CourierList
           couriers={couriers}
           onEdit={setEditingCourier}
-          onDelete={(id) =>
-            setCouriers(couriers.filter(c => c.id !== id))
-          }
+          onDelete={(id) => setCouriers(couriers.filter(c => c.id !== id))}
           onAdd={() => {
             setEditingCourier(undefined);
             setIsCourierFormOpen(true);
@@ -310,7 +278,6 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-600">
-
       <Header
         username={currentUser?.name || 'Admin'}
         onOpenSettings={() => setIsSettingsOpen(true)}
@@ -325,7 +292,6 @@ export default function App() {
         {menuItems.map(item => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
-
           return (
             <button
               key={item.id}
@@ -338,21 +304,18 @@ export default function App() {
           );
         })}
       </nav>
+
+      {/* Диалог ProductForm */}
       <Dialog open={isProductFormOpen} onOpenChange={setIsProductFormOpen}>
         <DialogContent>
           <ProductForm
             product={editingProduct}
             onSave={(product) => {
               if (editingProduct) {
-                setProducts(products.map(p =>
-                  p.id === editingProduct.id
-                    ? { ...p, ...product }
-                    : p
-                ));
+                setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...product } : p));
               } else {
                 setProducts([...products, { ...product, id: Date.now() }]);
               }
-
               setIsProductFormOpen(false);
               setEditingProduct(undefined);
             }}
@@ -361,6 +324,7 @@ export default function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Диалог CloseOrderForm */}
       <Dialog open={isCloseOrderFormOpen} onOpenChange={setIsCloseOrderFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>Закрыть заказ</DialogTitle></DialogHeader>
@@ -384,6 +348,7 @@ export default function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Диалог OrderDetails */}
       <Dialog open={isOrderDetailsOpen} onOpenChange={setIsOrderDetailsOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Детали заказа</DialogTitle></DialogHeader>
@@ -402,6 +367,7 @@ export default function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Диалог CourierForm */}
       <Dialog open={isCourierFormOpen} onOpenChange={setIsCourierFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -411,9 +377,7 @@ export default function App() {
             courier={editingCourier}
             onSave={(data) => {
               if (editingCourier) {
-                setCouriers(couriers.map(c =>
-                  c.id === editingCourier.id ? { ...data, id: c.id } : c
-                ));
+                setCouriers(couriers.map(c => c.id === editingCourier.id ? { ...data, id: c.id } : c));
               } else {
                 setCouriers([...couriers, { ...data, id: Date.now() }]);
               }
@@ -428,6 +392,7 @@ export default function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Диалог Settings */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>Настройки профиля</DialogTitle></DialogHeader>

@@ -11,7 +11,7 @@ import {
 } from '../ui/select';
 import { Eye, XCircle } from 'lucide-react';
 import { OrderDetails } from './OrderDetails';
-import { Dialog, DialogContent } from '../ui/dialog'; // <-- ваш Dialog
+import { Dialog, DialogContent } from '../ui/dialog'; 
 
 interface OrderTableProps {
   orders: Order[];
@@ -97,9 +97,9 @@ export function OrderTable({
                       size="sm"
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                       onClick={() => {
-                        console.log("clicked");
                         setSelectedOrder(order);
-                        setDetailsOpen(true); // открываем Dialog
+                        console.log('SELECTED ORDER:', { ...order });
+                        setDetailsOpen(true); 
                       }}
                     >
                       <Eye className="w-4 h-4 mr-1" />
@@ -131,7 +131,6 @@ export function OrderTable({
             <OrderDetails
               order={selectedOrder}
               onAssignCourier={(courierId) => {
-                // логика назначения курьера, можно поднять событие выше
                 console.log('Назначен курьер', courierId);
               }}
               onClose={() => setDetailsOpen(false)}

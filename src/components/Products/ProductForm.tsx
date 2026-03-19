@@ -87,10 +87,6 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
     });
   }}
 >
-        ...
-        <Button type="submit">
-          {product ? 'Сохранить' : 'Добавить'}
-        </Button>
 
 
         {/* Изображение */}

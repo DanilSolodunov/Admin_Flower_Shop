@@ -9,4 +9,5 @@ export interface Order {
   paymentMethod: 'наличный расчет' | 'online' | null;
   courier: string | null;
   reason?: string; 
+  address: string;
 }
