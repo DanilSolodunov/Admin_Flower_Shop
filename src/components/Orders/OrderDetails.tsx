@@ -134,18 +134,28 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
 
       {/* Информация об оплате и доставке */}
       <div className="flex flex-col sm:flex-row gap-4 w-full">
-        {order.paymentMethod && (
-          <Card className="border-slate-200 bg-white flex-1 min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <CreditCard className="w-4 h-4 text-slate-400" />
-                <span className="font-medium text-slate-900 block">Способ оплаты:</span>
-                <span className="ml-auto">{order.paymentMethod}</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+  {order.paymentMethod && (
+    <Card className="border-slate-200 bg-white flex-1 min-w-0">
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <CreditCard className="w-4 h-4 text-slate-400" />
+          <span className="font-medium text-slate-900 block">Способ оплаты:</span>
+          <span
+            className={`ml-auto font-semibold px-2 py-1 rounded-full ${
+              order.paymentMethod === 'наличный расчет'
+                ? 'bg-green-300 text-green-900'
+                : order.paymentMethod === 'online'
+                ? 'bg-yellow-300 text-yellow-900'
+                : ''
+            }`}
+          >
+            {order.paymentMethod}
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  )}
+</div>
 
       {/* Назначение курьера */}
       <Card className={`border-slate-200 bg-white`}>

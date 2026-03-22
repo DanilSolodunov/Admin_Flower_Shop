@@ -11,7 +11,7 @@ import {
 } from '../ui/select';
 import { Eye, XCircle } from 'lucide-react';
 import { OrderDetails } from './OrderDetails';
-import { Dialog, DialogContent } from '../ui/dialog'; 
+import { Dialog, DialogContent } from '../ui/dialog';
 
 interface OrderTableProps {
   orders: Order[];
@@ -98,7 +98,7 @@ export function OrderTable({
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                       onClick={() => {
                         setSelectedOrder(order);
-                        setDetailsOpen(true); 
+                        setDetailsOpen(true);
                       }}
                     >
                       <Eye className="w-4 h-4 mr-1" />
@@ -130,6 +130,9 @@ export function OrderTable({
             <OrderDetails
               order={selectedOrder}
               onAssignCourier={(courierId) => {
+              }}
+              onChangeStatus={(status) => {
+                setSelectedOrder((prev) => prev ? { ...prev, status } : prev);
               }}
               onClose={() => setDetailsOpen(false)}
             />
