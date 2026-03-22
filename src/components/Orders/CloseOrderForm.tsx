@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Order } from '../../types/Order';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
+import { useEffect } from 'react';
+import { StatusBadge } from '../ui/status-badge';
 import {
   Select,
   SelectContent,
@@ -23,6 +25,8 @@ interface CloseOrderFormProps {
   onCancel: () => void;
 }
 
+type UIOrderStatus = Order['status'] | 'не выбран';
+
 const REASONS = [
   'Успешная доставка',
   'Отмена клиентом',
@@ -35,7 +39,7 @@ const STATUSES: Order['status'][] = ['доставлен', 'отменен', 'в
 
 export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps) {
   const [reason, setReason] = useState('');
-  const [status, setStatus] = useState<Order['status']>('доставлен');
+  const [status, setStatus] = useState<UIOrderStatus>('не выбран');
   const [paymentMethod, setPaymentMethod] =
     useState<'наличный расчет' | 'online'>('наличный расчет');
   const [courier, setCourier] = useState<string | null>(order.courier ?? '');
@@ -55,10 +59,42 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
     return Object.keys(newErrors).length === 0;
   };
 
+  useEffect(() => {
+    if (reason) {
+      updateStatusByReason();
+    } else {
+      setStatus('не выбран');
+    }
+  }, [reason]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
       onClose(order.id, status, paymentMethod, courier, reason);
+    }
+  };
+
+  //   const getStatusByReason = (reason: string): Order['status'] => {
+  //   switch (reason) {
+  //     case 'Успешная доставка':
+  //       return 'доставлен';
+  //     case 'Отмена клиентом':
+  //       return 'возвращен';
+  //     default:
+  //       return 'отменен';
+  //   }
+  // };
+
+  const updateStatusByReason = () => {
+    switch (reason) {
+      case 'Успешная доставка':
+        setStatus('доставлен');
+        break;
+      case 'Отмена клиентом':
+        setStatus('возвращен');
+        break;
+      default:
+        setStatus('отменен');
     }
   };
 
@@ -68,7 +104,10 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
         {/* Причина закрытия */}
         <div className="space-y-2">
           <Label htmlFor="reason">Причина закрытия заказа *</Label>
+          {/* <Select value={reason} onValueChange={setReason}> */}
+
           <Select value={reason} onValueChange={setReason}>
+
             <SelectTrigger id="reason" className={errors.reason ? 'border-red-500' : ''}>
               <SelectValue placeholder="Выберите причину" />
             </SelectTrigger>
@@ -85,20 +124,8 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
 
         {/* Статус заказа */}
         <div className="space-y-2">
-          <Label htmlFor="status">Статус заказа *</Label>
-          <Select value={status} onValueChange={(value: Order['status']) => setStatus(value)}>
-            <SelectTrigger id="status" className={errors.status ? 'border-red-500' : ''}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.status && <p className="text-sm text-red-500">{errors.status}</p>}
+          <Label>Статус заказа</Label>
+          <StatusBadge status={status} />
         </div>
 
         {/* Способ оплаты */}
@@ -113,15 +140,15 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
           >
             <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
               <RadioGroupItem value='наличный расчет'>Наличный расчет</RadioGroupItem>
-              <Label htmlFor="cash" className="flex-1 cursor-pointer font-normal">
+              {/* <Label htmlFor="cash" className="flex-1 cursor-pointer font-normal">
                 Наличный расчет
-              </Label>
+              </Label> */}
             </div>
             <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
               <RadioGroupItem value="online"> online </RadioGroupItem>
-              <Label htmlFor="online" className="flex-1 cursor-pointer font-normal">
+              {/* <Label htmlFor="online" className="flex-1 cursor-pointer font-normal">
                 Онлайн оплата
-              </Label>
+              </Label> */}
             </div>
           </RadioGroup>
           {errors.paymentMethod && <p className="text-sm text-red-500">{errors.paymentMethod}</p>}

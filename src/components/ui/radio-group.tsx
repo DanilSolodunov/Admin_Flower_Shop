@@ -59,8 +59,8 @@ export function RadioGroupItem({
       className={clsx(
         "flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer border transition-all duration-200 select-none",
         checked
-          ? "bg-slate-900 border-blue-500 ring-1 ring-blue-500/40 text-white"
-          : "bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-slate-500 text-slate-300",
+          ? "bg-slate-200 border-blue-500 ring-1 ring-blue-500/40 text-ыдфеу-900"
+          : "bg-slate-200 border-slate-700 hover:bg-slate-700 hover:border-slate-500 text-slate-900",
         className
       )}
     >
