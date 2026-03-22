@@ -11,21 +11,12 @@ import { Label } from '../ui/label';
 interface OrderDetailsProps {
   order: Order | null;
   onAssignCourier: (courier: string) => void;
-   onChangeStatus: (status: string) => void;
+  onChangeStatus: (status: string) => void;
   onClose: () => void;
 }
-
-export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsProps) {
+export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }: OrderDetailsProps) {
   if (!order) return null;
   const [selectedCourier, setSelectedCourier] = React.useState<string | ''>(order.courier ?? '');
-
-  const handleSaveCourier = () => {
-    if (selectedCourier) {
-      onAssignCourier(selectedCourier);
-      onClose();
-      
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -39,15 +30,14 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
 
   const [selectedStatus, setSelectedStatus] = React.useState(order.status);
 
-  const handleStatusChange = (status: string) => {
-    setSelectedStatus(status);
-    
-
-    // тут можешь вызвать API или пробросить наружу
-    console.log("Новый статус:", status);
+  const handleAcceptOrder = () => {
+    if (selectedCourier) {
+      onAssignCourier(selectedCourier);
+      setSelectedStatus('собирается');
+      onChangeStatus?.('собирается');
+      onClose();
+    }
   };
-
-  
 
   return (
     <div className="space-y-6 p-4 max-w-full sm:max-w-md mx-auto">
@@ -62,8 +52,8 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
             </span>
           </div>
         </div>
-        <Badge className={getStatusColor(order.status)} variant="secondary">
-          {order.status}
+        <Badge className={getStatusColor(selectedStatus)} variant="secondary">
+          {selectedStatus}
         </Badge>
       </div>
 
@@ -155,35 +145,6 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
             </CardContent>
           </Card>
         )}
-
-        <Card className="border-slate-200 bg-white flex-1 min-w-0">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <MapPin className="w-4 h-4 text-slate-400" />
-              <span className="font-medium text-slate-900 block">
-                Статус доставки:
-              </span>
-
-              <div className="ml-auto w-[160px]">
-                <Select
-                  value={selectedStatus}
-                  onValueChange={handleStatusChange}
-                >
-                  <SelectTrigger className="w-full bg-white text-black border border-slate-300 hover:bg-slate-50 capitalize">
-                    <SelectValue />
-                  </SelectTrigger>
-
-                  <SelectContent className="bg-white text-slate-900 border border-slate-300">
-                    <SelectItem value="ожидает">Ожидает</SelectItem>
-                    <SelectItem value="собирается">Собирается</SelectItem>
-                    <SelectItem value="отправлен">Отправлен</SelectItem>
-                    <SelectItem value="доставлен">Доставлен</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Назначение курьера */}
@@ -238,13 +199,15 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
               </Select>
 
               <div className="flex flex-col sm:flex-row gap-2">
+                 {!order.courier && (
                 <Button
-                  onClick={handleSaveCourier}
+                  onClick={handleAcceptOrder}
                   disabled={!selectedCourier}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
-                  Сохранить
+                  Принять заказ
                 </Button>
+                 )}
                 <Button variant="outline" onClick={onClose} className="flex-1">
                   Закрыть
                 </Button>

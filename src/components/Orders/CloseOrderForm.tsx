@@ -74,17 +74,6 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
     }
   };
 
-  //   const getStatusByReason = (reason: string): Order['status'] => {
-  //   switch (reason) {
-  //     case 'Успешная доставка':
-  //       return 'доставлен';
-  //     case 'Отмена клиентом':
-  //       return 'возвращен';
-  //     default:
-  //       return 'отменен';
-  //   }
-  // };
-
   const updateStatusByReason = () => {
     switch (reason) {
       case 'Успешная доставка':

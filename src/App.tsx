@@ -351,15 +351,27 @@ export default function App() {
       {/* Диалог OrderDetails */}
       <Dialog open={isOrderDetailsOpen} onOpenChange={setIsOrderDetailsOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Детали заказа</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Детали заказа</DialogTitle>
+          </DialogHeader>
+
           {viewingOrder && (
             <OrderDetails
               order={viewingOrder}
-              onAssignCourier={(c) => {
-                const courierString = String(c);
-                setOrders(orders.map(o =>
-                  o.id === viewingOrder.id ? { ...o, courier: courierString } : o
-                ));
+              onAssignCourier={(courier) => {
+                const courierString = String(courier);
+                setOrders((prevOrders) =>
+                  prevOrders.map((o) =>
+                    o.id === viewingOrder.id ? { ...o, courier: courierString } : o
+                  )
+                );
+              }}
+              onChangeStatus={(status) => {
+                setOrders((prevOrders) =>
+                  prevOrders.map((o) =>
+                    o.id === viewingOrder.id ? { ...o, status } : o
+                  )
+                );
               }}
               onClose={() => setIsOrderDetailsOpen(false)}
             />
