@@ -11,18 +11,19 @@ import { Label } from '../ui/label';
 interface OrderDetailsProps {
   order: Order | null;
   onAssignCourier: (courier: string) => void;
+   onChangeStatus: (status: string) => void;
   onClose: () => void;
 }
 
 export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsProps) {
   if (!order) return null;
-  console.log("ORDER:", order)
   const [selectedCourier, setSelectedCourier] = React.useState<string | ''>(order.courier ?? '');
 
   const handleSaveCourier = () => {
     if (selectedCourier) {
       onAssignCourier(selectedCourier);
       onClose();
+      
     }
   };
 
@@ -35,6 +36,18 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
       default: return 'bg-gray-200 text-gray-800 border-gray-200';
     }
   };
+
+  const [selectedStatus, setSelectedStatus] = React.useState(order.status);
+
+  const handleStatusChange = (status: string) => {
+    setSelectedStatus(status);
+    
+
+    // тут можешь вызвать API или пробросить наружу
+    console.log("Новый статус:", status);
+  };
+
+  
 
   return (
     <div className="space-y-6 p-4 max-w-full sm:max-w-md mx-auto">
@@ -111,15 +124,15 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
 
         {/* Адрес доставки */}
         <CardContent className="pt-4">
-           <div className="mt-4 p-3 bg-slate-50 rounded border border-slate-200 text-sm text-slate-700">
-    <span className="flex items-center gap-1">
-      <MapPin className="w-4 h-4 text-slate-500" />
-      Адрес доставки:{' '}
-      <span className="text-slate-700">
-        {order.address && order.address.trim() !== '' ? order.address : 'Адрес не указан'}
-      </span>
-    </span>
-  </div>
+          <div className="mt-4 p-3 bg-slate-50 rounded border border-slate-200 text-sm text-slate-700">
+            <span className="flex items-center gap-1">
+              <MapPin className="w-4 h-4 text-slate-500" />
+              Адрес доставки:{' '}
+              <span className="text-slate-700">
+                {order.address && order.address.trim() !== '' ? order.address : 'Адрес не указан'}
+              </span>
+            </span>
+          </div>
 
           {/* Итоговая сумма */}
           <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center">
@@ -147,8 +160,27 @@ export function OrderDetails({ order, onAssignCourier, onClose }: OrderDetailsPr
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <MapPin className="w-4 h-4 text-slate-400" />
-              <span className="font-medium text-slate-900 block">Статус доставки:</span>
-              <span className="ml-auto capitalize">{order.status}</span>
+              <span className="font-medium text-slate-900 block">
+                Статус доставки:
+              </span>
+
+              <div className="ml-auto w-[160px]">
+                <Select
+                  value={selectedStatus}
+                  onValueChange={handleStatusChange}
+                >
+                  <SelectTrigger className="w-full bg-white text-black border border-slate-300 hover:bg-slate-50 capitalize">
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent className="bg-white text-slate-900 border border-slate-300">
+                    <SelectItem value="ожидает">Ожидает</SelectItem>
+                    <SelectItem value="собирается">Собирается</SelectItem>
+                    <SelectItem value="отправлен">Отправлен</SelectItem>
+                    <SelectItem value="доставлен">Доставлен</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>

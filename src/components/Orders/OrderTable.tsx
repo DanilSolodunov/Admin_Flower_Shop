@@ -41,10 +41,10 @@ export function OrderTable({
         {showActions && (
           <div className="flex justify-end">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-56 bg-slate-800 border-slate-700 text-slate-200">
+              <SelectTrigger className="w-56 bg-slate-400 border-slate-400 text-slate-900">
                 <SelectValue placeholder="Фильтр по статусу" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+              <SelectContent className="bg-slate-400 border-slate-400 text-slate-900">
                 <SelectItem value="Все статусы">Все статусы</SelectItem>
                 <SelectItem value="ожидает">Ожидает</SelectItem>
                 <SelectItem value="собирается">Собирается</SelectItem>
@@ -98,7 +98,6 @@ export function OrderTable({
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                       onClick={() => {
                         setSelectedOrder(order);
-                        console.log('SELECTED ORDER:', { ...order });
                         setDetailsOpen(true); 
                       }}
                     >
@@ -131,7 +130,6 @@ export function OrderTable({
             <OrderDetails
               order={selectedOrder}
               onAssignCourier={(courierId) => {
-                console.log('Назначен курьер', courierId);
               }}
               onClose={() => setDetailsOpen(false)}
             />

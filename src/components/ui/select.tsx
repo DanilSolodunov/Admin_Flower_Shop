@@ -76,7 +76,7 @@ export function SelectTrigger({
       type="button"
       onClick={() => setOpen(!open)}
       className={clsx(
-        "flex items-center justify-between gap-2 px-4 py-2 w-48 bg-gray-800 text-white border border-gray-600 rounded-lg hover:border-gray-400 transition-colors",
+        "flex items-center justify-between gap-2 px-4 py-2 w-48 bg-gray-100 text-slate-900 border border-gray-100 rounded-lg hover:border-gray-100 transition-colors",
         className
       )}
     >
@@ -136,7 +136,7 @@ export function SelectContent({
   return (
     <div
       className={clsx(
-        "absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 overflow-hidden",
+        "absolute right-0 mt-2 w-48 bg-gray-100 border border-gray-100 text-slate-900 rounded-lg shadow-xl z-50 overflow-hidden",
         className
       )}
     >
@@ -169,7 +169,7 @@ export function SelectItem<T extends string | number>({
         onValueChange(value);
         setOpen(false);
       }}
-      className="px-4 py-2 text-sm text-white hover:bg-gray-700 cursor-pointer transition-colors"
+      className="px-4 py-2 text-sm text-slate-900 hover:bg-gray-100 cursor-pointer transition-colors"
     >
       {children}
     </div>
