@@ -88,7 +88,6 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   }}
 >
 
-
         {/* Изображение */}
         <div className="space-y-2">
           <Label htmlFor="imageurl">Изображение *</Label>
@@ -131,7 +130,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         {/* Цена и количество */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-          <div className="space-y-2">
+          <div className="flex flex-col space-y-2">
             <Label htmlFor="price">Цена</Label>
             <Input
               id="price"
@@ -143,7 +142,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="flex flex-col space-y-2">
             <Label htmlFor="amount">Количество</Label>
             <Input
               id="amount"

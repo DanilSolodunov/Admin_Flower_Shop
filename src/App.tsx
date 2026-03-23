@@ -119,8 +119,8 @@ export default function App() {
   const [viewingOrder, setViewingOrder] = useState<Order | undefined>(undefined);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
 
-  const [editingCourier, setEditingCourier] = useState<Courier | undefined>(undefined);
-  const [isCourierFormOpen, setIsCourierFormOpen] = useState(false);
+  const [editingCourier, setEditingCourier] = useState<Courier | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -131,6 +131,28 @@ export default function App() {
   const completedOrders = orders.filter(order =>
     ['доставлен', 'отменен', 'возвращен'].includes(order.status)
   );
+
+  const [isCourierFormOpen, setIsCourierFormOpen] = useState(false);
+
+  const handleSaveCourier = (data: Omit<Courier, 'id'>) => {
+  if (editingCourier) {
+    setCouriers(prev =>
+      prev.map(c =>
+        c.id === editingCourier.id
+          ? { ...c, ...data }
+          : c
+      )
+    );
+  } else {
+    setCouriers(prev => [
+      ...prev,
+      { ...data, id: Date.now() }
+    ]);
+  }
+
+  setIsFormOpen(false);
+  setEditingCourier(null);
+};
 
   useEffect(() => { localStorage.setItem('adminhub_products', JSON.stringify(products)); }, [products]);
   useEffect(() => { localStorage.setItem('adminhub_orders', JSON.stringify(orders)); }, [orders]);
@@ -213,8 +235,6 @@ export default function App() {
     new_orders: (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-white">Новые заказы</h1>
-
-        {/* передаём активные заказы в OrderTable */}
         <OrderTable
           orders={activeOrders}
           onCloseOrder={(o) => {
@@ -258,10 +278,16 @@ export default function App() {
 
         <CourierList
           couriers={couriers}
-          onEdit={setEditingCourier}
-          onDelete={(id) => setCouriers(couriers.filter(c => c.id !== id))}
+          onEdit={(courier) => {
+            console.log('OPEN EDIT', courier);
+            setEditingCourier(courier);
+            setIsCourierFormOpen(true);
+          }}
+          onDelete={(id) => {
+            setCouriers(prev => prev.filter(c => c.id !== id));
+          }}
           onAdd={() => {
-            setEditingCourier(undefined);
+            setEditingCourier(null);
             setIsCourierFormOpen(true);
           }}
         />
@@ -380,29 +406,39 @@ export default function App() {
       </Dialog>
 
       {/* Диалог CourierForm */}
-      <Dialog open={isCourierFormOpen} onOpenChange={setIsCourierFormOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}</DialogTitle>
-          </DialogHeader>
-          <CourierForm
-            courier={editingCourier}
-            onSave={(data) => {
-              if (editingCourier) {
-                setCouriers(couriers.map(c => c.id === editingCourier.id ? { ...data, id: c.id } : c));
-              } else {
-                setCouriers([...couriers, { ...data, id: Date.now() }]);
-              }
-              setIsCourierFormOpen(false);
-              setEditingCourier(undefined);
-            }}
-            onCancel={() => {
-              setIsCourierFormOpen(false);
-              setEditingCourier(undefined);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+     <Dialog open={isCourierFormOpen} onOpenChange={setIsCourierFormOpen}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>
+        {editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}
+      </DialogTitle>
+    </DialogHeader>
+
+    <CourierForm
+      courier={editingCourier || undefined}
+      onSave={(data) => {
+        setCouriers((prev) => {
+          if (editingCourier) {
+            return prev.map((c) =>
+              c.id === editingCourier.id
+                ? { ...c, ...data }
+                : c
+            );
+          } else {
+            return [...prev, { ...data, id: Date.now() }];
+          }
+        });
+
+        setIsCourierFormOpen(false);
+        setEditingCourier(null);
+      }}
+      onCancel={() => {
+        setIsCourierFormOpen(false);
+        setEditingCourier(null);
+      }}
+    />
+  </DialogContent>
+</Dialog>
 
       {/* Диалог Settings */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>

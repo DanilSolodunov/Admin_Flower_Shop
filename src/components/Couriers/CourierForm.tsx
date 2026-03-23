@@ -14,7 +14,7 @@ import {
 
 interface CourierFormProps {
   courier?: Courier;
-  onSave: (courierData: Omit<Courier, 'id'>) => void;
+  onSave: (courierData: Courier) => void;
   onCancel: () => void;
 }
 
@@ -34,7 +34,7 @@ export function CourierForm({ courier, onSave, onCancel }: CourierFormProps) {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!name.trim()) {
       newErrors.name = 'Имя обязательно';
     }
@@ -42,6 +42,12 @@ export function CourierForm({ courier, onSave, onCancel }: CourierFormProps) {
       newErrors.phone = 'Телефон обязателен';
     } else if (!/^[\d\+\-\(\) ]+$/.test(phone)) {
       newErrors.phone = 'Некорректный номер телефона';
+    }
+    if (name.length > 20) {
+      newErrors.name = 'Имя не должно превышать 20 символов';
+    }
+    if (phone.length > 15) {
+      newErrors.phone = 'Телефон не должен превышать 15 символов';
     }
 
     setErrors(newErrors);
@@ -51,31 +57,42 @@ export function CourierForm({ courier, onSave, onCancel }: CourierFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      onSave({ name, phone, status });
+      onSave({
+        ...(courier ? { id: courier.id } : {}),
+        name,
+        phone,
+        status,
+      } as Courier);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <div className="space-y-2">
+        <div className="flex flex-col space-y-2">
           <Label htmlFor="name">Имя курьера *</Label>
           <Input
             id="name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value.length <= 20) setName(e.target.value);
+            }}
+            maxLength={20} // ограничение в HTML
             placeholder="Иванов Иван"
             className={errors.name ? 'border-red-300 focus-visible:ring-red-500' : ''}
           />
           {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
         </div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col space-y-2">
           <Label htmlFor="phone">Телефон *</Label>
           <Input
             id="phone"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value.length <= 15) setPhone(e.target.value);
+            }}
+            maxLength={15} // ограничение в HTML
             placeholder="+7 (999) 123-45-67"
             className={errors.phone ? 'border-red-300 focus-visible:ring-red-500' : ''}
           />
