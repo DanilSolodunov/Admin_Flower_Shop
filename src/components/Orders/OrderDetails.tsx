@@ -40,11 +40,10 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
   };
 
   return (
-    <div className="space-y-6 p-4 max-w-full sm:max-w-md mx-auto">
-      {/* Заголовок и статус */}
+<div className="space-y-4 px-2 sm:px-3 w-full max-w-full sm:max-w-md mx-auto box-border max-h-[90vh] overflow-y-auto">      {/* Заголовок и статус */}
       <div className="flex justify-between items-start pb-4 border-b border-slate-100">
         <div>
-          <h3 className="text-xl font-bold text-slate-900">Заказ #{order.id}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900">Заказ #{order.id}</h3>
           <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
             <span className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
@@ -59,13 +58,13 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
 
       {/* Список товаров */}
       <Card className="border-slate-900 bg-white">
-        <CardHeader className="bg-slate-50/50 pb-3">
-          <CardTitle className="text-base flex items-center gap-2 !text-black">
+        <CardHeader className="bg-slate-50/50 py-2 sm:py-3 px-3">
+          <CardTitle className="text-base flex-1 min-w-0 w-full items-center gap-2 !text-black">
             <Package className="w-4 h-4 !text-slate-900" />
             Состав заказа
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="pt-2 sm:pt-4 px-3">
           {order.products.length === 0 ? (
             <p className="text-slate-500 text-sm py-4 text-center">Список товаров пуст</p>
           ) : (
@@ -83,7 +82,7 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
                 return (
                   <div key={index} className="flex justify-between items-start gap-4">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
                         {product?.imageurl && (
                           <img
                             src={product.imageurl}
@@ -113,7 +112,7 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
         </CardContent>
 
         {/* Адрес доставки */}
-        <CardContent className="pt-4">
+        <CardContent className="pt-2 sm:pt-4 px-3">
           <div className="mt-4 p-3 bg-slate-50 rounded border border-slate-200 text-sm text-slate-700">
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4 text-slate-500" />
@@ -127,45 +126,44 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
           {/* Итоговая сумма */}
           <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center">
             <span className="font-semibold text-slate-700">Итого к оплате:</span>
-            <span className="text-2xl font-bold text-slate-900">{order.total.toLocaleString()} ₽</span>
+            <span className="text-lg sm:text-2xl font-bold text-slate-900">{order.total.toLocaleString()} ₽</span>
           </div>
         </CardContent>
       </Card>
 
       {/* Информация об оплате и доставке */}
       <div className="flex flex-col sm:flex-row gap-4 w-full">
-  {order.paymentMethod && (
-    <Card className="border-slate-200 bg-white flex-1 min-w-0">
-      <CardContent className="pt-6">
-        <div className="flex items-center gap-2 text-sm text-slate-600">
-          <CreditCard className="w-4 h-4 text-slate-400" />
-          <span className="font-medium text-slate-900 block">Способ оплаты:</span>
-          <span
-            className={`ml-auto font-semibold px-2 py-1 rounded-full ${
-              order.paymentMethod === 'наличный расчет'
-                ? 'bg-green-300 text-green-900'
-                : order.paymentMethod === 'online'
-                ? 'bg-yellow-300 text-yellow-900'
-                : ''
-            }`}
-          >
-            {order.paymentMethod}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
-  )}
-</div>
+        {order.paymentMethod && (
+          <Card className="border-slate-200 bg-white flex-1 min-w-0 w-full">
+            <CardContent className="pt-2 sm:pt-4 px-3">
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <CreditCard className="w-4 h-4 text-slate-400" />
+                <span className="font-medium text-slate-900 block">Способ оплаты:</span>
+                <span
+                  className={`ml-auto font-semibold px-2 py-1 rounded-full ${order.paymentMethod === 'наличный расчет'
+                      ? 'bg-green-300 text-green-900'
+                      : order.paymentMethod === 'online'
+                        ? 'bg-yellow-300 text-yellow-900'
+                        : ''
+                    }`}
+                >
+                  {order.paymentMethod}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Назначение курьера */}
       <Card className={`border-slate-200 bg-white`}>
-        <CardHeader className="bg-slate-50/50 pb-3">
-          <CardTitle className="text-base flex items-center gap-2 !text-black">
+        <CardHeader className="bg-slate-50/50 py-2 sm:py-3 px-3">
+          <CardTitle className="text-base flex-1 min-w-0 w-full items-center gap-2 !text-black">
             <User className="w-4 h-4 text-slate-500" />
             Курьер
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4 space-y-4">
+        <CardContent className="pt-2 sm:pt-4 px-3">
           {order.courier ? (
             <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -209,15 +207,15 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
               </Select>
 
               <div className="flex flex-col sm:flex-row gap-2">
-                 {!order.courier && (
-                <Button
-                  onClick={handleAcceptOrder}
-                  disabled={!selectedCourier}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
-                >
-                  Принять заказ
-                </Button>
-                 )}
+                {!order.courier && (
+                  <Button
+                    onClick={handleAcceptOrder}
+                    disabled={!selectedCourier}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  >
+                    Принять заказ
+                  </Button>
+                )}
                 <Button variant="outline" onClick={onClose} className="flex-1">
                   Закрыть
                 </Button>
