@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Product } from '../../types/Product';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -15,6 +15,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [formData, setFormData] = useState({
     imageurl: product?.imageurl || '',
     description: product?.description || '',
@@ -74,28 +75,73 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   return (
     <div className="w-full max-w-md mx-auto px-4 sm:px-6">
 
-      
-       <form
-  onSubmit={(e) => {
-    e.preventDefault();
 
-    onSave({
-      imageurl: formData.imageurl,
-      description: formData.description || "",
-      price: Number(formData.price),
-      amount: Number(formData.amount),
-    });
-  }}
->
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+
+          onSave({
+            imageurl: formData.imageurl,
+            description: formData.description || "",
+            price: Number(formData.price),
+            amount: Number(formData.amount),
+          });
+        }}
+      >
 
         {/* Изображение */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="imageurl">Изображение *</Label>
 
           <Button
             type="button"
             variant="outline"
             onClick={handleOpenImageDialog}
+            className="w-full justify-start text-slate-900 border-dashed border-2 h-12 hover:bg-slate-50 hover:border-blue-400"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            {formData.imageurl ? 'Изменить фото' : 'Добавить фото'}
+          </Button>
+
+          {formData.imageurl && (
+            <div className="flex items-center gap-2 mt-2">
+              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-md border overflow-hidden">
+                <img
+                  src={formData.imageurl}
+                  alt="Preview"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
+          )}
+        </div> */}
+
+        <div className="space-y-2">
+          <Label htmlFor="image">Изображение *</Label>
+
+          <input
+            id="image"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            ref={fileInputRef} // <-- привязываем ref
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  handleChange('imageurl', reader.result as string);
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+          />
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()} // <-- открываем файловый диалог
             className="w-full justify-start text-slate-900 border-dashed border-2 h-12 hover:bg-slate-50 hover:border-blue-400"
           >
             <Upload className="mr-2 h-4 w-4" />
