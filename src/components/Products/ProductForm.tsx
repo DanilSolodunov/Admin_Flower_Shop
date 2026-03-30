@@ -7,6 +7,7 @@ import { Textarea } from '../ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { Upload } from 'lucide-react';
 import { validateProduct } from '../../utils/validators';
+import { prepareImageForSave } from '../../utils/imageUtils';
 
 interface ProductFormProps {
   product?: Product;
@@ -89,33 +90,6 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         }}
       >
 
-        {/* Изображение */}
-        {/* <div className="space-y-2">
-          <Label htmlFor="imageurl">Изображение *</Label>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleOpenImageDialog}
-            className="w-full justify-start text-slate-900 border-dashed border-2 h-12 hover:bg-slate-50 hover:border-blue-400"
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            {formData.imageurl ? 'Изменить фото' : 'Добавить фото'}
-          </Button>
-
-          {formData.imageurl && (
-            <div className="flex items-center gap-2 mt-2">
-              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-md border overflow-hidden">
-                <img
-                  src={formData.imageurl}
-                  alt="Preview"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-          )}
-        </div> */}
-
         <div className="space-y-2">
           <Label htmlFor="image">Изображение *</Label>
 
@@ -126,14 +100,27 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
             capture="environment"
             className="hidden"
             ref={fileInputRef} // <-- привязываем ref
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                  handleChange('imageurl', reader.result as string);
-                };
-                reader.readAsDataURL(file);
+
+              if (!file) return;
+
+              try {
+                const result = await prepareImageForSave(file);
+
+                console.log(
+                  `Фото сжато: ${result.originalSize} -> ${result.compressedSize}`
+                );
+
+                handleChange('imageurl', result.imageUrl);
+              } catch (error) {
+                console.error(error);
+
+                alert(
+                  error instanceof Error
+                    ? error.message
+                    : 'Не удалось обработать изображение'
+                );
               }
             }}
           />
