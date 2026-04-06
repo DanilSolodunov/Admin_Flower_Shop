@@ -1,10 +1,13 @@
 export const validateImage = (image: string): boolean => {
   if (!image || typeof image !== 'string') return false;
-  
+
+  // Если 'valid' — значит файл выбран, пропускаем
+  if (image === 'valid') return true;
+
   // Проверяем base64 (Data URL)
   const base64Pattern = /^data:image\/(png|jpeg|jpg|webp);base64,/i;
   if (base64Pattern.test(image)) return true;
-  
+
   // Проверяем HTTP(S) URL
   const imagePattern = /^https?:\/\/.+\.(png|jpg|jpeg|webp)$/i;
   return imagePattern.test(image.trim());

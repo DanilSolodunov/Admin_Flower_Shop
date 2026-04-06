@@ -43,8 +43,15 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Сначала проверяем, что файл выбран
+    if (!selectedImageFile) {
+      setErrors({ image: 'Выберите изображение' });
+      return;
+    }
+
+    // Валидируем только текстовые поля (изображение уже проверено выше)
     const validation = validateProduct({
-      image: formData.image,
+      image: 'valid', // Пропускаем валидацию изображения — файл уже выбран
       name: formData.name,
       description: formData.description,
       price: Number(formData.price),
@@ -54,11 +61,6 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
 
     if (!validation.isValid) {
       setErrors(validation.errors);
-      return;
-    }
-
-    if (!selectedImageFile) {
-      setErrors({ image: 'Выберите изображение' });
       return;
     }
 
@@ -125,6 +127,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="image">Изображение *</Label>
+          {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
 
           <input
             id="image"
@@ -181,6 +184,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         {/* Название товара */}
         <div className="space-y-2">
           <Label htmlFor="name">Название *</Label>
+          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           <Input
             id="name"
             value={formData.name}
@@ -192,6 +196,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         {/* Описание */}
         <div className="space-y-2">
           <Label htmlFor="description">Описание *</Label>
+          {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
 
           <Textarea
             id="description"
@@ -204,6 +209,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         {/* Категория */}
         <div className="space-y-2">
           <Label htmlFor="category">Категория *</Label>
+          {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
 
           <Select
             value={formData.category}
@@ -231,6 +237,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
 
           <div className="flex flex-col space-y-2">
             <Label htmlFor="price">Цена</Label>
+            {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
             <Input
               id="price"
               type="number"
@@ -243,6 +250,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
 
           <div className="flex flex-col space-y-2">
             <Label htmlFor="amount">Количество</Label>
+            {errors.amount && <p className="text-red-500 text-sm">{errors.amount}</p>}
             <Input
               id="amount"
               type="number"

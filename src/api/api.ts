@@ -9,30 +9,55 @@ export const api = axios.create({
   },
 });
 
+// Базовый URL для статических файлов (изображения и т.д.)
+const STATIC_BASE_URL = "http://localhost:8080";
+
 // Продукты
 export const productApi = {
   // Получить все товары
   getAllProducts: async () => {
     const response = await api.get<Product[]>("/products");
-    return response.data;
+    console.log('С сервера получены товары:', response.data);
+    // Добавляем baseURL к изображениям, если сервер возвращает относительный путь
+    return response.data.map(product => ({
+      ...product,
+      image: product.image && !product.image.startsWith('http') 
+        ? `${STATIC_BASE_URL}${product.image}`
+        : product.image,
+    }));
   },
 
   // Получить товар по ID
   getProductById: async (id: number) => {
     const response = await api.get<Product>(`/products/id`, { params: { id } });
-    return response.data;
+    const product = response.data;
+    // Добавляем baseURL к изображению
+    if (product.image && !product.image.startsWith('http')) {
+      product.image = `${STATIC_BASE_URL}${product.image}`;
+    }
+    return product;
   },
 
   // Получить товары по категории
   getProductsByCategory: async (category: string) => {
     const response = await api.get<Product[]>(`/products/category/${category}`);
-    return response.data;
+    return response.data.map(product => ({
+      ...product,
+      image: product.image && !product.image.startsWith('http') 
+        ? `${STATIC_BASE_URL}${product.image}`
+        : product.image,
+    }));
   },
 
   // Поиск товаров
   searchProducts: async (keyword: string) => {
     const response = await api.get<Product[]>("/products/search", { params: { keyword } });
-    return response.data;
+    return response.data.map(product => ({
+      ...product,
+      image: product.image && !product.image.startsWith('http') 
+        ? `${STATIC_BASE_URL}${product.image}`
+        : product.image,
+    }));
   },
 
   // Получить все категории

@@ -17,6 +17,7 @@ import { SettingsForm } from './components/Settings/SettingsForm';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
 import { Package, ShoppingCart, CheckCircle, BarChart3, Users } from 'lucide-react';
+import { productApi } from './api/api';
 
 const menuItems = [
   { id: 'products' as const, label: 'Товары', icon: Package },
@@ -36,10 +37,25 @@ export default function App() {
     return [{ id: 1, username: 'admin', password: 'admin123', name: 'Администратор', role: 'admin' }];
   });
 
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('adminhub_products');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+
+  // Загрузка товаров с сервера при монтировании
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setIsLoadingProducts(true);
+      const data = await productApi.getAllProducts();
+      setProducts(data);
+    } catch (err) {
+      console.error('Ошибка при загрузке товаров:', err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
 
   // === Заглушки заказов ===
   const [orders, setOrders] = useState<Order[]>(() => {
@@ -169,7 +185,6 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => { localStorage.setItem('adminhub_products', JSON.stringify(products)); }, [products]);
   useEffect(() => { localStorage.setItem('adminhub_orders', JSON.stringify(orders)); }, [orders]);
   useEffect(() => { localStorage.setItem('adminhub_users', JSON.stringify(users)); }, [users]);
   useEffect(() => { localStorage.setItem('adminhub_couriers', JSON.stringify(couriers)); }, [couriers]);
@@ -219,14 +234,23 @@ export default function App() {
           </Button>
         </div>
 
-        <ProductTable
-          products={products}
-          onEdit={(product) => {
-            setEditingProduct(product);
-            setIsProductFormOpen(true);
-          }}
-          onDelete={(id) => setProducts(products.filter((p) => p.id !== id))}
-        />
+        {isLoadingProducts ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-slate-200">Загрузка товаров...</div>
+          </div>
+        ) : (
+          <ProductTable
+            products={products}
+            onEdit={(product) => {
+              setEditingProduct(product);
+              setIsProductFormOpen(true);
+            }}
+            onDelete={async (id) => {
+              // TODO: добавить API удаления на сервере
+              setProducts(products.filter((p) => p.id !== id));
+            }}
+          />
+        )}
       </div>
     ),
 
@@ -335,17 +359,9 @@ export default function App() {
           <ProductForm
             product={editingProduct}
             onSave={async () => {
-              // После сохранения обновляем список с сервера
               setIsProductFormOpen(false);
               setEditingProduct(undefined);
-              // Можно перезагрузить товары с сервера
-              try {
-                const { productApi } = await import('./api/api');
-                const data = await productApi.getAllProducts();
-                setProducts(data);
-              } catch (error) {
-                console.error('Ошибка при обновлении списка товаров:', error);
-              }
+              await loadProducts();
             }}
             onCancel={() => setIsProductFormOpen(false)}
           />
