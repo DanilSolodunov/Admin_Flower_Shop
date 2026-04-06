@@ -62,9 +62,9 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
             >
               {/* Изображение */}
               <div className="h-40 w-full rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center mb-4">
-                {product.imageurl ? (
+                {product.image ? (
                   <img
-                    src={product.imageurl}
+                    src={product.image}
                     alt={product.description}
                     className="h-full w-full object-cover"
                     onError={(e) => {

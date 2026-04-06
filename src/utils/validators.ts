@@ -1,7 +1,13 @@
-export const validateImageUrl = (url: string): boolean => {
-  if (!url || typeof url !== 'string') return false;
-  const urlPattern = /^https?:\/\/.+\.(png|jpg|jpeg|webp)$/i;
-  return urlPattern.test(url.trim());
+export const validateImage = (image: string): boolean => {
+  if (!image || typeof image !== 'string') return false;
+  
+  // Проверяем base64 (Data URL)
+  const base64Pattern = /^data:image\/(png|jpeg|jpg|webp);base64,/i;
+  if (base64Pattern.test(image)) return true;
+  
+  // Проверяем HTTP(S) URL
+  const imagePattern = /^https?:\/\/.+\.(png|jpg|jpeg|webp)$/i;
+  return imagePattern.test(image.trim());
 };
 
 export const validatePrice = (price: number): boolean => {
@@ -28,19 +34,29 @@ export interface ValidationResult {
 }
 
 export const validateProduct = (product: {
-  imageurl: string;
+  image: string;
+  name: string;
   description: string;
   price: number;
   amount: number;
+  category: string;
 }): ValidationResult => {
   const errors: Record<string, string> = {};
 
-  if (!validateImageUrl(product.imageurl || '')) {
-    errors.imageurl = 'Введите корректный URL изображения (png, jpg, jpeg, webp)';
+  if (!validateImage(product.image || '')) {
+    errors.image = 'не корректный формат изображения (png, jpg, jpeg, webp)';
+  }
+
+  if (!product.name || product.name.trim().length === 0) {
+    errors.name = 'Название не может быть пустым';
   }
 
   if (!validateDescription(product.description || '')) {
     errors.description = 'Описание не может быть пустым';
+  }
+
+  if (!product.category || product.category.trim().length === 0) {
+    errors.category = 'Категория не может быть пустой';
   }
 
   if (!validatePrice(product.price)) {

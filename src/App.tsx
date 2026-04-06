@@ -135,24 +135,39 @@ export default function App() {
   const [isCourierFormOpen, setIsCourierFormOpen] = useState(false);
 
   const handleSaveCourier = (data: Omit<Courier, 'id'>) => {
-  if (editingCourier) {
-    setCouriers(prev =>
-      prev.map(c =>
-        c.id === editingCourier.id
-          ? { ...c, ...data }
-          : c
-      )
-    );
-  } else {
-    setCouriers(prev => [
-      ...prev,
-      { ...data, id: Date.now() }
-    ]);
-  }
+    if (editingCourier) {
+      setCouriers(prev =>
+        prev.map(c =>
+          c.id === editingCourier.id
+            ? { ...c, ...data }
+            : c
+        )
+      );
+    } else {
+      setCouriers(prev => [
+        ...prev,
+        { ...data, id: Date.now() }
+      ]);
+    }
 
-  setIsFormOpen(false);
-  setEditingCourier(null);
-};
+    setIsFormOpen(false);
+    setEditingCourier(null);
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+
+    if (token) {
+      setIsAuthenticated(true);
+
+      setCurrentUser({
+        id: 0,
+        username: 'admin',
+        password: '',
+        role: 'ADMIN',
+      });
+    }
+  }, []);
 
   useEffect(() => { localStorage.setItem('adminhub_products', JSON.stringify(products)); }, [products]);
   useEffect(() => { localStorage.setItem('adminhub_orders', JSON.stringify(orders)); }, [orders]);
@@ -170,35 +185,18 @@ export default function App() {
   if (!isAuthenticated)
     return (
       <LoginForm
-        onLogin={(u, p) => {
-          const user = users.find(x => x.username === u && x.password === p);
-          if (user) {
-            setCurrentUser(user);
-            setIsAuthenticated(true);
-            localStorage.setItem('adminhub_auth', JSON.stringify(user));
-            return { success: true };
-          }
-          return { success: false, error: 'Неверные данные' };
-        }}
-        onRegister={(u, p) => {
-          if (users.find(x => x.username === u))
-            return { success: false, error: 'Пользователь существует' };
+        onLoginSuccess={(token) => {
+          localStorage.setItem('accessToken', token);
 
-          const newUser: User = {
-            id: users.length + 1,
-            username: u,
-            password: p,
-            name: u,
-            role: 'admin'
-          };
+          setCurrentUser({
+            id: 0,
+            username: 'admin',
+            password: '',
+            // name: 'Администратор',
+            role: 'ADMIN',
+          });
 
-          setUsers([...users, newUser]);
-          setCurrentUser(newUser);
           setIsAuthenticated(true);
-
-          localStorage.setItem('adminhub_auth', JSON.stringify(newUser));
-
-          return { success: true };
         }}
       />
     );
@@ -305,7 +303,7 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col bg-gray-600">
       <Header
-        username={currentUser?.name || 'Admin'}
+        username={currentUser?.username || 'Admin'}
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
@@ -336,14 +334,18 @@ export default function App() {
         <DialogContent>
           <ProductForm
             product={editingProduct}
-            onSave={(product) => {
-              if (editingProduct) {
-                setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...product } : p));
-              } else {
-                setProducts([...products, { ...product, id: Date.now() }]);
-              }
+            onSave={async () => {
+              // После сохранения обновляем список с сервера
               setIsProductFormOpen(false);
               setEditingProduct(undefined);
+              // Можно перезагрузить товары с сервера
+              try {
+                const { productApi } = await import('./api/api');
+                const data = await productApi.getAllProducts();
+                setProducts(data);
+              } catch (error) {
+                console.error('Ошибка при обновлении списка товаров:', error);
+              }
             }}
             onCancel={() => setIsProductFormOpen(false)}
           />
@@ -406,39 +408,39 @@ export default function App() {
       </Dialog>
 
       {/* Диалог CourierForm */}
-     <Dialog open={isCourierFormOpen} onOpenChange={setIsCourierFormOpen}>
-  <DialogContent className="sm:max-w-md">
-    <DialogHeader>
-      <DialogTitle>
-        {editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}
-      </DialogTitle>
-    </DialogHeader>
+      <Dialog open={isCourierFormOpen} onOpenChange={setIsCourierFormOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}
+            </DialogTitle>
+          </DialogHeader>
 
-    <CourierForm
-      courier={editingCourier || undefined}
-      onSave={(data) => {
-        setCouriers((prev) => {
-          if (editingCourier) {
-            return prev.map((c) =>
-              c.id === editingCourier.id
-                ? { ...c, ...data }
-                : c
-            );
-          } else {
-            return [...prev, { ...data, id: Date.now() }];
-          }
-        });
+          <CourierForm
+            courier={editingCourier || undefined}
+            onSave={(data) => {
+              setCouriers((prev) => {
+                if (editingCourier) {
+                  return prev.map((c) =>
+                    c.id === editingCourier.id
+                      ? { ...c, ...data }
+                      : c
+                  );
+                } else {
+                  return [...prev, { ...data, id: Date.now() }];
+                }
+              });
 
-        setIsCourierFormOpen(false);
-        setEditingCourier(null);
-      }}
-      onCancel={() => {
-        setIsCourierFormOpen(false);
-        setEditingCourier(null);
-      }}
-    />
-  </DialogContent>
-</Dialog>
+              setIsCourierFormOpen(false);
+              setEditingCourier(null);
+            }}
+            onCancel={() => {
+              setIsCourierFormOpen(false);
+              setEditingCourier(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Диалог Settings */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>

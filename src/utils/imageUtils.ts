@@ -45,7 +45,7 @@ export const validateImageFile = (
   return { isValid: true };
 };
 
-export const fileToDataUrl = (file: File): Promise<string> => {
+export const fileToData = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -65,7 +65,7 @@ export const fileToDataUrl = (file: File): Promise<string> => {
   });
 };
 
-export const loadImage = (dataUrl: string): Promise<HTMLImageElement> => {
+export const loadImage = (data: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const image = new Image();
 
@@ -75,7 +75,7 @@ export const loadImage = (dataUrl: string): Promise<HTMLImageElement> => {
       reject(new Error('Не удалось загрузить изображение'));
     };
 
-    image.src = dataUrl;
+    image.src = data;
   });
 };
 
@@ -85,8 +85,8 @@ export const compressImage = async (
 ): Promise<string> => {
   const config = { ...DEFAULT_OPTIONS, ...options };
 
-  const dataUrl = await fileToDataUrl(file);
-  const image = await loadImage(dataUrl);
+  const data = await fileToData(file);
+  const image = await loadImage(data);
 
   let width = image.width;
   let height = image.height;
@@ -129,7 +129,8 @@ export const estimateBase64Size = (base64: string): number => {
 export const prepareImageForSave = async (
   file: File
 ): Promise<{
-  imageUrl: string;
+  [x: string]: string;
+  image: string;
   originalSize: string;
   compressedSize: string;
 }> => {
@@ -150,7 +151,7 @@ export const prepareImageForSave = async (
   const compressedSize = formatFileSize(estimateBase64Size(compressed));
 
   return {
-    imageUrl: compressed,
+    image: compressed,
     originalSize,
     compressedSize,
   };

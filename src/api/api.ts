@@ -1,0 +1,266 @@
+
+import axios from "axios";
+import { Product, AddToCartRequest } from "../types/Product";
+
+export const api = axios.create({
+  baseURL: "http://localhost:8080/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Продукты
+export const productApi = {
+  // Получить все товары
+  getAllProducts: async () => {
+    const response = await api.get<Product[]>("/products");
+    return response.data;
+  },
+
+  // Получить товар по ID
+  getProductById: async (id: number) => {
+    const response = await api.get<Product>(`/products/id`, { params: { id } });
+    return response.data;
+  },
+
+  // Получить товары по категории
+  getProductsByCategory: async (category: string) => {
+    const response = await api.get<Product[]>(`/products/category/${category}`);
+    return response.data;
+  },
+
+  // Поиск товаров
+  searchProducts: async (keyword: string) => {
+    const response = await api.get<Product[]>("/products/search", { params: { keyword } });
+    return response.data;
+  },
+
+  // Получить все категории
+  getCategories: async () => {
+    const response = await api.get<string[]>("/products/categories");
+    return response.data;
+  },
+
+  // Сжать изображение перед загрузкой
+  compressImage: async (file: File, maxWidth: number = 1920, maxHeight: number = 1920, quality: number = 0.8): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Вычисляем новые размеры, сохраняя пропорции
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Не удалось получить контекст canvas'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Не удалось сжать изображение'));
+                return;
+              }
+              // Создаём новый File из сжатого blob
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              console.log(`Изображение сжато: ${file.size} -> ${compressedFile.size} bytes (${Math.round((1 - compressedFile.size / file.size) * 100)}% сжатие)`);
+              resolve(compressedFile);
+            },
+            'image/jpeg',
+            quality
+          );
+        };
+        img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
+      };
+      reader.onerror = () => reject(new Error('Не удалось прочитать файл'));
+    });
+  },
+
+  // Загрузить изображение
+  uploadImage: async (image: File, compress: boolean = true) => {
+    let fileToUpload = image;
+
+    // Сжимаем изображение перед загрузкой
+    if (compress) {
+      try {
+        fileToUpload = await productApi.compressImage(image);
+      } catch (error) {
+        console.warn('Не удалось сжать изображение, загружаем оригинал:', error);
+        fileToUpload = image;
+      }
+    }
+
+    const formData = new FormData();
+    formData.append("image", fileToUpload);
+
+    console.log('Загрузка изображения:', fileToUpload.name, fileToUpload.size, 'bytes');
+
+    const response = await api.post<string>("/products/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    console.log('Изображение загружено, ответ сервера:', response.data);
+    return response.data;
+  },
+
+  // Добавить новый товар
+  // addProduct: async (request: AddToCartRequest) => {
+  //   console.log('API addProduct вызван с данными:', request);
+  //   console.log('JSON запроса:', JSON.stringify(request, null, 2));
+
+  //   const response = await api.post<Product>("/products/addproduct", request, {
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //   });
+
+  //   console.log('Ответ сервера:', response.data);
+  //   return response.data;
+  // },
+
+  addProduct: async (request: AddToCartRequest, image: File) => {
+    const formData = new FormData();
+
+    // Добавляем все поля request напрямую как отдельные части
+    formData.append("image", request.image || '');
+    formData.append("name", request.name || '');
+    formData.append("description", request.description || '');
+    formData.append("price", String(request.price));
+    formData.append("amount", String(request.amount));
+    formData.append("category", request.category || '');
+
+    // Добавляем файл изображения
+    formData.append("file", image);
+
+    console.log('Отправка multipart запроса:', {
+      image: request.image,
+      name: request.name,
+      description: request.description,
+      price: request.price,
+      amount: request.amount,
+      category: request.category,
+      file: image.name
+    });
+
+    const response = await api.post<Product>(
+      "/products/addproduct",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  },
+
+  // Обновить товар
+  updateProduct: async (id: number, request: AddToCartRequest) => {
+    const response = await api.put<Product>(`/products/${id}`, request);
+    return response.data;
+  },
+};
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) {
+        return Promise.reject(error);
+      }
+
+      try {
+        const { data } = await api.post("/auth/refresh", { refreshToken });
+
+        localStorage.setItem("accessToken", data.accessToken);
+
+        processQueue(null, data.accessToken);
+
+        return api(originalRequest);
+
+      } catch (err) {
+
+        processQueue(err, null);
+
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+
+        return Promise.reject(err);
+
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);

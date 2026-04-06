@@ -3,18 +3,19 @@ import { User } from '../../types/User';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Trash2 } from 'lucide-react';
+import { Trash2, LogOut } from 'lucide-react';
 
 interface SettingsFormProps {
   user: User;
-  onUpdate: (data: { name: string; username: string; password: string }) => void;
+  onUpdate: (data: { username: string; password: string }) => void;
   onDelete: () => void;
   onCancel: () => void;
+  onLogout: () => void;
 }
 
-export function SettingsForm({ user, onUpdate, onDelete, onCancel }: SettingsFormProps) {
+export function SettingsForm({ user, onUpdate, onDelete, onCancel, onLogout }: SettingsFormProps) {
   const [formData, setFormData] = useState({
-    name: user.name,
+    // name: user.name,
     username: user.username,
     password: '', // Пустое поле означает "не менять пароль"
   });
@@ -25,7 +26,7 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel }: SettingsFor
     // Если пароль пустой, оставляем старый
     const passwordToSend = formData.password || user.password;
     onUpdate({
-      name: formData.name,
+      // name: formData.name,
       username: formData.username,
       password: passwordToSend,
     });
@@ -50,8 +51,8 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel }: SettingsFor
           <Label htmlFor="name">Имя (отображаемое)</Label>
           <Input
             id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={formData.username}
+            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
             placeholder="Иван Иванов"
             required
           />
@@ -88,6 +89,22 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel }: SettingsFor
           </Button>
         </div>
       </form>
+
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold text-slate-800 mb-2">Выход из аккаунта</h3>
+        <p className="text-sm text-slate-500 mb-4">
+          Выйдите из системы, чтобы завершить сеанс.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onLogout}
+          className="w-full"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Выйти
+        </Button>
+      </div>
 
       <div className="border-t pt-6">
         <h3 className="text-lg font-semibold text-red-600 mb-2">Опасная зона</h3>
