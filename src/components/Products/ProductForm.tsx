@@ -125,7 +125,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
 
       <form onSubmit={handleSubmit}>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label htmlFor="image">Изображение *</Label>
           {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
 
@@ -182,7 +182,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         </div>
 
         {/* Название товара */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label htmlFor="name">Название *</Label>
           {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           <Input
@@ -194,7 +194,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         </div>
 
         {/* Описание */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label htmlFor="description">Описание *</Label>
           {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
 
@@ -207,7 +207,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         </div>
 
         {/* Категория */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label htmlFor="category">Категория *</Label>
           {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
 
@@ -235,7 +235,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         {/* Цена и количество */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-3">
             <Label htmlFor="price">Цена</Label>
             {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
             <Input
@@ -248,7 +248,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
             />
           </div>
 
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-3">
             <Label htmlFor="amount">Количество</Label>
             {errors.amount && <p className="text-red-500 text-sm">{errors.amount}</p>}
             <Input

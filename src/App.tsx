@@ -18,6 +18,7 @@ import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
 import { Package, ShoppingCart, CheckCircle, BarChart3, Users } from 'lucide-react';
 import { productApi } from './api/api';
+import { orderApi } from './api/orderApi';
 
 const menuItems = [
   { id: 'products' as const, label: 'Товары', icon: Package },
@@ -57,67 +58,25 @@ export default function App() {
     }
   };
 
-  // === Заглушки заказов ===
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('adminhub_orders');
-    if (saved) return JSON.parse(saved);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
 
-    return [
-      {
-        id: 1001,
-        date: new Date().toISOString(),
-        status: 'ожидает',
-        total: 15800,
-        courier: null,
-        paymentMethod: 'online',
-        address: 'г. Белореченск ул. Ленина 120',
-        products: [
-          { product: { id: 1, description: 'Букет роз красных', price: 1600, imageurl: 'https://images.unsplash.com/photo-1548095115-45697e72b73d' }, quantity: 2 },
-          { product: { id: 2, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 },
-          { product: { id: 3, description: 'Пионовый букет', price: 1500, imageurl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93' }, quantity: 3 },
-          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 },
-          { product: { id: 5, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 },
-          { product: { id: 6, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 }
-        ]
-      },
-      {
-        id: 1002,
-        date: new Date().toISOString(),
-        status: 'собирается',
-        total: 2100,
-        courier: 'Курьер 1',
-        paymentMethod: 'наличный расчет',
-        address: 'г. Белореченск ул. Мира 10',
-        products: [
-          { product: { id: 2, description: 'Букет тюльпанов', price: 700, imageurl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d' }, quantity: 3 }
-        ]
-      },
-      {
-        id: 1003,
-        date: new Date().toISOString(),
-        status: 'отправлен',
-        total: 4500,
-        courier: 'Курьер 2',
-        paymentMethod: 'online',
-        address: 'г. Майкоп ул. Ленина 20',
-        products: [
-          { product: { id: 3, description: 'Пионовый букет', price: 1500, imageurl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93' }, quantity: 3 }
-        ]
-      },
-      {
-        id: 1004,
-        date: '2026-03-16T09:00:00.000Z',
-        status: 'доставлен',
-        total: 1800,
-        courier: 'Курьер 3',
-        paymentMethod: 'наличный расчет',
-        address: 'г. Майкоп ул. Пролетарская 230',
-        products: [
-          { product: { id: 4, description: 'Букет ромашек', price: 600, imageurl: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6' }, quantity: 3 }
-        ]
-      }
-    ];
-  });
+  // Загрузка заказов с сервера
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      setIsLoadingOrders(true);
+      const data = await orderApi.getAllOrders();
+      setOrders(data);
+    } catch (err) {
+      console.error('Ошибка при загрузке заказов:', err);
+    } finally {
+      setIsLoadingOrders(false);
+    }
+  };
 
   const [couriers, setCouriers] = useState<Courier[]>(() => {
     const saved = localStorage.getItem('adminhub_couriers');
@@ -185,7 +144,6 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => { localStorage.setItem('adminhub_orders', JSON.stringify(orders)); }, [orders]);
   useEffect(() => { localStorage.setItem('adminhub_users', JSON.stringify(users)); }, [users]);
   useEffect(() => { localStorage.setItem('adminhub_couriers', JSON.stringify(couriers)); }, [couriers]);
 
@@ -257,40 +215,39 @@ export default function App() {
     new_orders: (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-white">Новые заказы</h1>
-        <OrderTable
-          orders={activeOrders}
-          onCloseOrder={(o) => {
-            setClosingOrder(o);
-            setIsCloseOrderFormOpen(true);
-          }}
-          showActions
-        />
-
-        <div className="pt-4">
-          <Button
-            size="sm"
-            className="bg-gray-500 hover:bg-gray-600"
-            onClick={() => {
-              localStorage.removeItem('adminhub_orders');
-              window.location.reload();
-            }}
-          >
-            Сбросить тестовые заказы
-          </Button>
-        </div>
+        {isLoadingOrders ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-slate-200">Загрузка заказов...</div>
+          </div>
+        ) : (
+          <>
+            <OrderTable
+              orders={activeOrders}
+              onCloseOrder={(o) => {
+                setClosingOrder(o);
+                setIsCloseOrderFormOpen(true);
+              }}
+              showActions
+            />
+          </>
+        )}
       </div>
     ),
 
     completed_orders: (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-white">Завершенные заказы</h1>
-
-        {/* передаём завершённые заказы в OrderTable */}
-        <OrderTable
-          orders={completedOrders}
-          onCloseOrder={() => { }}
-          showActions={false}
-        />
+        {isLoadingOrders ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-slate-200">Загрузка заказов...</div>
+          </div>
+        ) : (
+          <OrderTable
+            orders={completedOrders}
+            onCloseOrder={() => { }}
+            showActions={false}
+          />
+        )}
       </div>
     ),
 
@@ -375,13 +332,15 @@ export default function App() {
           {closingOrder && (
             <CloseOrderForm
               order={closingOrder}
-              onClose={(id, status, paymentMethod, courier, reason) => {
+              onClose={async (id, status, paymentMethod, courier, reason) => {
                 const courierString = String(courier);
                 setOrders(orders.map(o =>
                   o.id === id ? { ...o, status, paymentMethod, courier: courierString, reason } : o
                 ));
                 setIsCloseOrderFormOpen(false);
                 setClosingOrder(undefined);
+                // Перезагружаем заказы с сервера
+                await loadOrders();
               }}
               onCancel={() => {
                 setIsCloseOrderFormOpen(false);
@@ -402,20 +361,22 @@ export default function App() {
           {viewingOrder && (
             <OrderDetails
               order={viewingOrder}
-              onAssignCourier={(courier) => {
+              onAssignCourier={async (courier) => {
                 const courierString = String(courier);
                 setOrders((prevOrders) =>
                   prevOrders.map((o) =>
                     o.id === viewingOrder.id ? { ...o, courier: courierString } : o
                   )
                 );
+                await loadOrders();
               }}
-              onChangeStatus={(status) => {
+              onChangeStatus={async (status) => {
                 setOrders((prevOrders) =>
                   prevOrders.map((o) =>
                     o.id === viewingOrder.id ? { ...o, status } : o
                   )
                 );
+                await loadOrders();
               }}
               onClose={() => setIsOrderDetailsOpen(false)}
             />
@@ -482,6 +443,13 @@ export default function App() {
                 localStorage.removeItem('adminhub_auth');
               }}
               onCancel={() => setIsSettingsOpen(false)}
+              onLogout={() => {
+                setIsAuthenticated(false);
+                setCurrentUser(null);
+                setIsSettingsOpen(false);
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('adminhub_auth');
+              }}
             />
           )}
         </DialogContent>

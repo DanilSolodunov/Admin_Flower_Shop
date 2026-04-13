@@ -83,9 +83,9 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
                   <div key={index} className="flex justify-between items-start gap-4">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
-                        {product?.imageurl && (
+                        {product?.image && (
                           <img
-                            src={product.imageurl}
+                            src={product.image}
                             alt={product.description || ''}
                             className="w-full h-full object-cover"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
