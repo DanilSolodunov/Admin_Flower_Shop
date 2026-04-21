@@ -18,6 +18,7 @@ interface RegisterResponse {
 interface LoginResponse {
   accessToken: string;
   refreshToken?: string;
+  role?: string;
 }
 
 interface LoginFormProps {
@@ -45,88 +46,59 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
     setError('');
     setIsLoading(true);
 
-    if (isRegister) {
-      if (!validateEmail(email)) {
-        setError('Введите корректный email');
-        setIsLoading(false);
-        return;
-      }
+    console.log('SUBMIT WORKS');
 
-      if (password !== confirmPassword) {
-        setError('Пароли не совпадают');
-        setIsLoading(false);
-        return;
-      }
+    try {
+      if (isRegister) {
+        if (!validateEmail(email)) throw new Error('Введите корректный email');
+        if (password !== confirmPassword) throw new Error('Пароли не совпадают');
+        if (password.length < 6) throw new Error('Минимум 6 символов');
 
-      if (password.length < 6) {
-        setError('Пароль должен содержать минимум 6 символов');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
         await api.post<RegisterResponse>('/auth/register', {
-          username,
+          name: username,
           email,
           password,
           role: 'ADMIN',
         });
+      }
 
-        const loginResponse = await api.post<LoginResponse>('/auth/login', {
+      const response = await api.post<LoginResponse>('/auth/login', {
+        email,
+        password,
+        role: 'ADMIN',
+      });
+
+      const { accessToken, refreshToken } = response.data;
+
+      localStorage.setItem('accessToken', accessToken);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
+
+      // 🔥 НОВАЯ ЛОГИКА (ключевое изменение)
+      localStorage.setItem(
+        'authUser',
+        JSON.stringify({
           email,
-          password,
-        });
+          role: 'ADMIN',
+        })
+      );
 
-        localStorage.setItem('accessToken', loginResponse.data.accessToken);
-
-        if (loginResponse.data.refreshToken) {
-          localStorage.setItem(
-            'refreshToken',
-            loginResponse.data.refreshToken
-          );
-        }
-
-        onLoginSuccess(loginResponse.data.accessToken);
-      }
-
-      catch (err: any) {
-        setError(
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          'Ошибка регистрации'
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      try {
-        const response = await api.post<LoginResponse>('/auth/login', {
-          email,
-          password,
-        });
-
-        localStorage.setItem('accessToken', response.data.accessToken);
-
-        if (response.data.refreshToken) {
-          localStorage.setItem('refreshToken', response.data.refreshToken);
-        }
-
-        onLoginSuccess(response.data.accessToken);
-      } catch (err: any) {
-        setError(
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          'Ошибка входа'
-        );
-      } finally {
-        setIsLoading(false);
-      }
+      onLoginSuccess(accessToken);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Ошибка авторизации'
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const toggleMode = () => {
     setIsRegister(!isRegister);
-
     setUsername('');
     setEmail('');
     setPassword('');
@@ -137,108 +109,68 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
       <Card className="w-full max-w-md shadow-xl border-slate-200">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold text-slate-800">
+        <CardHeader className="text-center">
+          <CardTitle>
             {isRegister ? 'Регистрация' : 'Вход в AdminHub'}
           </CardTitle>
-
-          <CardDescription className="text-slate-500">
+          <CardDescription>
             {isRegister
-              ? 'Создайте новый аккаунт администратора'
-              : 'Введите свои учетные данные для доступа'}
+              ? 'Создайте аккаунт администратора'
+              : 'Введите данные'}
           </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {isRegister && (
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="username">Имя пользователя</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="admin"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  className="border-slate-300"
-                />
-              </div>
+              <Input
+                placeholder="Имя"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
             )}
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="example@mail.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="border-slate-300"
-              />
-            </div>
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Пароль</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-slate-300"
-              />
-            </div>
+            <Input
+              type="password"
+              placeholder="Пароль"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
             {isRegister && (
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="border-slate-300"
-                />
-              </div>
+              <Input
+                type="password"
+                placeholder="Повторите пароль"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
             )}
 
-            {error && (
-              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
-                {error}
-              </div>
-            )}
+            {error && <div className="text-red-500">{error}</div>}
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
+            <Button type="submit" disabled={isLoading}>
               {isLoading
-                ? isRegister
-                  ? 'Регистрация...'
-                  : 'Вход...'
+                ? 'Загрузка...'
                 : isRegister
-                  ? 'Зарегистрироваться'
-                  : 'Войти'}
+                ? 'Регистрация'
+                : 'Войти'}
             </Button>
           </form>
 
-          <div className="mt-4 text-center text-sm">
-            <span className="text-slate-500">
-              {isRegister ? 'Уже есть аккаунт?' : 'Нет аккаунта?'}
-            </span>{' '}
-            <button
-              type="button"
-              onClick={toggleMode}
-              className="font-medium text-blue-600 hover:underline"
-            >
-              {isRegister ? 'Войти' : 'Зарегистрироваться'}
+          <div className="text-center mt-4">
+            <button onClick={toggleMode} className="text-blue-600">
+              {isRegister ? 'Войти' : 'Регистрация'}
             </button>
           </div>
         </CardContent>

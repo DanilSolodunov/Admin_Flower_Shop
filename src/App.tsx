@@ -131,16 +131,19 @@ export default function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
+    const savedUser = localStorage.getItem('authUser');
 
-    if (token) {
-      setIsAuthenticated(true);
+    if (token && savedUser) {
+      const parsedUser = JSON.parse(savedUser);
 
       setCurrentUser({
         id: 0,
-        username: 'admin',
+        username: parsedUser.email,
         password: '',
-        role: 'ADMIN',
+        role: parsedUser.role,
       });
+
+      setIsAuthenticated(true);
     }
   }, []);
 
@@ -161,13 +164,18 @@ export default function App() {
         onLoginSuccess={(token) => {
           localStorage.setItem('accessToken', token);
 
-          setCurrentUser({
-            id: 0,
-            username: 'admin',
-            password: '',
-            // name: 'Администратор',
-            role: 'ADMIN',
-          });
+          const savedUser = localStorage.getItem('authUser');
+
+          if (savedUser) {
+            const parsedUser = JSON.parse(savedUser);
+
+            setCurrentUser({
+              id: 0,
+              username: parsedUser.email,
+              password: '',
+              role: parsedUser.role,
+            });
+          }
 
           setIsAuthenticated(true);
         }}

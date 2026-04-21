@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Order } from '../../types/Order';
 import { Product } from '../../types/Product';
 import { Button } from '../ui/button';
@@ -14,9 +14,40 @@ interface OrderDetailsProps {
   onChangeStatus: (status: string) => void;
   onClose: () => void;
 }
+
+const API_URL = 'http://localhost:8080/api/orders/supplier';
+
+interface UpdateOrderRequest {
+  Id: number;
+  status: string;
+  courier: string;
+}
+
+async function updateOrderServer(orderId: number, status: string, courier: string): Promise<void> {
+  const requestBody: UpdateOrderRequest = {
+    Id: orderId,
+    status,
+    courier,
+  };
+
+  const response = await fetch(API_URL, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Ошибка при обновлении заказа: ${response.statusText}`);
+  }
+}
+
 export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }: OrderDetailsProps) {
   if (!order) return null;
   const [selectedCourier, setSelectedCourier] = React.useState<string | ''>(order.courier ?? '');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -30,17 +61,32 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
 
   const [selectedStatus, setSelectedStatus] = React.useState(order.status);
 
-  const handleAcceptOrder = () => {
+  const handleAcceptOrder = async () => {
     if (selectedCourier) {
-      onAssignCourier(selectedCourier);
-      setSelectedStatus('собирается');
-      onChangeStatus?.('собирается');
-      onClose();
+      setIsLoading(true);
+      setError(null);
+      try {
+        await updateOrderServer(order.id, 'собирается', selectedCourier);
+        onAssignCourier(selectedCourier);
+        setSelectedStatus('собирается');
+        onChangeStatus('собирается');
+        onClose();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Произошла ошибка при обновлении заказа');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   return (
-<div className="space-y-4 px-2 sm:px-3 w-full max-w-full sm:max-w-md mx-auto box-border max-h-[90vh] overflow-y-auto">      {/* Заголовок и статус */}
+    <div className="space-y-4 px-2 sm:px-3 w-full max-w-full sm:max-w-md mx-auto box-border max-h-[90vh] overflow-y-auto">
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      {/* Заголовок и статус */}
       <div className="flex justify-between items-start pb-4 border-b border-slate-100">
         <div>
           <h3 className="text-lg sm:text-xl font-bold text-slate-900">Заказ #{order.id}</h3>
@@ -210,13 +256,13 @@ export function OrderDetails({ order, onAssignCourier, onChangeStatus, onClose }
                 {!order.courier && (
                   <Button
                     onClick={handleAcceptOrder}
-                    disabled={!selectedCourier}
+                    disabled={!selectedCourier || isLoading}
                     className="flex-1 bg-blue-600 hover:bg-blue-700"
                   >
-                    Принять заказ
+                    {isLoading ? 'Обработка...' : 'Принять заказ'}
                   </Button>
                 )}
-                <Button variant="outline" onClick={onClose} className="flex-1">
+                <Button variant="outline" onClick={onClose} className="flex-1" disabled={isLoading}>
                   Закрыть
                 </Button>
               </div>
