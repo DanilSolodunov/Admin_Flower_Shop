@@ -4,12 +4,8 @@ import { Product, AddToCartRequest } from "../types/Product";
 
 export const api = axios.create({
   baseURL: "http://localhost:8080/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
-// Базовый URL для статических файлов (изображения и т.д.)
 const STATIC_BASE_URL = "http://localhost:8080";
 
 // Продукты
@@ -21,7 +17,7 @@ export const productApi = {
     // Добавляем baseURL к изображениям, если сервер возвращает относительный путь
     return response.data.map(product => ({
       ...product,
-      image: product.image && !product.image.startsWith('http') 
+      image: product.image && !product.image.startsWith('http')
         ? `${STATIC_BASE_URL}${product.image}`
         : product.image,
     }));
@@ -43,7 +39,7 @@ export const productApi = {
     const response = await api.get<Product[]>(`/products/category/${category}`);
     return response.data.map(product => ({
       ...product,
-      image: product.image && !product.image.startsWith('http') 
+      image: product.image && !product.image.startsWith('http')
         ? `${STATIC_BASE_URL}${product.image}`
         : product.image,
     }));
@@ -54,7 +50,7 @@ export const productApi = {
     const response = await api.get<Product[]>("/products/search", { params: { keyword } });
     return response.data.map(product => ({
       ...product,
-      image: product.image && !product.image.startsWith('http') 
+      image: product.image && !product.image.startsWith('http')
         ? `${STATIC_BASE_URL}${product.image}`
         : product.image,
     }));
@@ -109,7 +105,6 @@ export const productApi = {
                 reject(new Error('Не удалось сжать изображение'));
                 return;
               }
-              // Создаём новый File из сжатого blob
               const compressedFile = new File([blob], file.name, {
                 type: 'image/jpeg',
                 lastModified: Date.now(),
@@ -156,45 +151,7 @@ export const productApi = {
     return response.data;
   },
 
-  // Добавить новый товар
-  // addProduct: async (request: AddToCartRequest) => {
-  //   console.log('API addProduct вызван с данными:', request);
-  //   console.log('JSON запроса:', JSON.stringify(request, null, 2));
-
-  //   const response = await api.post<Product>("/products/addproduct", request, {
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //   });
-
-  //   console.log('Ответ сервера:', response.data);
-  //   return response.data;
-  // },
-
-  addProduct: async (request: AddToCartRequest, image: File) => {
-    const formData = new FormData();
-
-    // Добавляем все поля request напрямую как отдельные части
-    formData.append("image", request.image || '');
-    formData.append("name", request.name || '');
-    formData.append("description", request.description || '');
-    formData.append("price", String(request.price));
-    formData.append("amount", String(request.amount));
-    formData.append("category", request.category || '');
-
-    // Добавляем файл изображения
-    formData.append("file", image);
-
-    console.log('Отправка multipart запроса:', {
-      image: request.image,
-      name: request.name,
-      description: request.description,
-      price: request.price,
-      amount: request.amount,
-      category: request.category,
-      file: image.name
-    });
-
+  addProduct: async (formData: FormData) => {
     const response = await api.post<Product>(
       "/products/addproduct",
       formData,
@@ -208,9 +165,17 @@ export const productApi = {
     return response.data;
   },
 
-  // Обновить товар
-  updateProduct: async (id: number, request: AddToCartRequest) => {
-    const response = await api.put<Product>(`/products/${id}`, request);
+  updateProduct: async (id: number, formData: FormData) => {
+    const response = await api.put<Product>(
+      `/products/${id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
     return response.data;
   },
 };

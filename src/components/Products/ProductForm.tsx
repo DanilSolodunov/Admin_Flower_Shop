@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Product, AddToCartRequest } from '../../types/Product';
+import { Product } from '../../types/Product';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -24,34 +24,55 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
-export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
+export function ProductForm({
+  product,
+  onSave,
+  onCancel,
+}: ProductFormProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const [formData, setFormData] = useState({
     image: product?.image || '',
     name: product?.name || '',
     description: product?.description || '',
-    price: product?.price || '',
-    amount: product?.amount || '',
+    price: product?.price?.toString() || '',
+    amount: product?.amount?.toString() || '',
     category: product?.category || '',
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
-  const [tempImage, setTempImage] = useState('');
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+
+  const isNewProduct = !product;
+
+  const handleChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    if (errors[field]) {
+      setErrors((prev) => {
+        const updated = { ...prev };
+        delete updated[field];
+        return updated;
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Сначала проверяем, что файл выбран
-    if (!selectedImageFile) {
-      setErrors({ image: 'Выберите изображение' });
+    if (isNewProduct && !selectedImageFile) {
+      setErrors({
+        image: 'Выберите изображение',
+      });
       return;
     }
 
-    // Валидируем только текстовые поля (изображение уже проверено выше)
     const validation = validateProduct({
-      image: 'valid', // Пропускаем валидацию изображения — файл уже выбран
+      image: 'valid',
       name: formData.name,
       description: formData.description,
       price: Number(formData.price),
@@ -67,51 +88,48 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
     setIsSubmitting(true);
 
     try {
-      const request: AddToCartRequest = {
-        image: '',
-        name: formData.name || '',
-        description: formData.description,
-        price: Number(formData.price),
-        amount: Number(formData.amount),
-        category: formData.category || '',
-      };
+      const formDataToSend = new FormData();
+
+      if (formData.name) {
+        formDataToSend.append('name', formData.name);
+      }
+
+      if (formData.description) {
+        formDataToSend.append('description', formData.description);
+      }
+
+      if (formData.price) {
+        formDataToSend.append('price', formData.price);
+      }
+
+      if (formData.amount) {
+        formDataToSend.append('amount', formData.amount);
+      }
+
+      if (formData.category) {
+        formDataToSend.append('category', formData.category);
+      }
+
+      if (selectedImageFile) {
+        formDataToSend.append('file', selectedImageFile);
+      }
 
       if (product) {
-        await productApi.updateProduct(product.id, request);
+        await productApi.updateProduct(product.id, formDataToSend);
       } else {
-        await productApi.addProduct(request, selectedImageFile);
+        await productApi.addProduct(formDataToSend);
       }
 
       onSave();
     } catch (error) {
       console.error(error);
+
       setErrors({
         submit: 'Не удалось сохранить товар',
       });
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleOpenImageDialog = () => {
-    setTempImage(formData.image);
-    setIsImageDialogOpen(true);
-  };
-
-  const handleSaveImage = () => {
-    handleChange('image', tempImage);
-    setIsImageDialogOpen(false);
   };
 
   return (
@@ -123,11 +141,19 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-4">
 
+        {/* IMAGE */}
         <div className="space-y-3">
-          <Label htmlFor="image">Изображение *</Label>
-          {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
+          <Label htmlFor="image">
+            Изображение {isNewProduct ? '*' : ''}
+          </Label>
+
+          {errors.image && (
+            <p className="text-red-500 text-sm">
+              {errors.image}
+            </p>
+          )}
 
           <input
             id="image"
@@ -162,69 +188,56 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full justify-start text-slate-900 border-dashed border-2 h-12 hover:bg-slate-50 hover:border-blue-400"
+            className="w-full justify-start text-slate-900 border-dashed border-2 h-12"
           >
             <Upload className="mr-2 h-4 w-4" />
             {formData.image ? 'Изменить фото' : 'Добавить фото'}
           </Button>
 
           {formData.image && (
-            <div className="flex items-center gap-2 mt-2">
-              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-md border overflow-hidden">
-                <img
-                  src={formData.image}
-                  alt="Preview"
-                  className="h-full w-full object-cover"
-                />
-              </div>
+            <div className="h-20 w-20 rounded-md border overflow-hidden">
+              <img
+                src={formData.image}
+                alt="Preview"
+                className="h-full w-full object-cover"
+              />
             </div>
           )}
         </div>
 
-        {/* Название товара */}
+        {/* NAME */}
         <div className="space-y-3">
           <Label htmlFor="name">Название *</Label>
-          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+
           <Input
             id="name"
             value={formData.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-            placeholder="Введите название товара"
+            onChange={(e) =>
+              handleChange('name', e.target.value)
+            }
           />
         </div>
 
-        {/* Описание */}
-        <div className="space-y-3">
-          <Label htmlFor="description">Описание *</Label>
-          {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
-
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) => handleChange('description', e.target.value)}
-            rows={3}
-          />
-        </div>
-
-        {/* Категория */}
+        {/* CATEGORY */}
         <div className="space-y-3">
           <Label htmlFor="category">Категория *</Label>
-          {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
 
           <Select
             value={formData.category}
-            onValueChange={(value) => handleChange('category', value)}
+            onValueChange={(value) =>
+              handleChange('category', value)
+            }
           >
-            <SelectTrigger
-              id="category"
-              className="w-full justify-between border border-input bg-background"
-            >
+            <SelectTrigger>
               <SelectValue placeholder="Выберите категорию" />
             </SelectTrigger>
 
-            <SelectContent className="w-full left-0 right-0">
+            <SelectContent>
               {FLOWER_CATEGORIES.map((category) => (
-                <SelectItem key={category} value={category}>
+                <SelectItem
+                  key={category}
+                  value={category}
+                >
                   {category}
                 </SelectItem>
               ))}
@@ -232,39 +245,57 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
           </Select>
         </div>
 
-        {/* Цена и количество */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* DESCRIPTION */}
+        <div className="space-y-3">
+          <Label htmlFor="description">Описание *</Label>
 
-          <div className="flex flex-col space-y-3">
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) =>
+              handleChange('description', e.target.value)
+            }
+            rows={3}
+          />
+        </div>
+
+        {/* PRICE + AMOUNT */}
+        <div className="grid grid-cols-2 gap-4">
+
+          <div className="space-y-3">
             <Label htmlFor="price">Цена</Label>
-            {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
+
             <Input
               id="price"
               type="number"
-              max={9000}
               min={0}
+              max={9000}
               value={formData.price}
-              onChange={(e) => handleChange('price', e.target.value)}
+              onChange={(e) =>
+                handleChange('price', e.target.value)
+              }
             />
           </div>
 
-          <div className="flex flex-col space-y-3">
+          <div className="space-y-3">
             <Label htmlFor="amount">Количество</Label>
-            {errors.amount && <p className="text-red-500 text-sm">{errors.amount}</p>}
+
             <Input
               id="amount"
               type="number"
-              max={9000}
               min={0}
+              max={9000}
               value={formData.amount}
-              onChange={(e) => handleChange('amount', e.target.value)}
+              onChange={(e) =>
+                handleChange('amount', e.target.value)
+              }
             />
           </div>
 
         </div>
 
-        {/* Кнопки */}
-        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+        {/* BUTTONS */}
+        <div className="flex justify-end gap-2 pt-4">
 
           <Button
             type="button"
@@ -277,14 +308,17 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
 
           <Button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700"
             disabled={isSubmitting}
+            className="bg-blue-600 hover:bg-blue-700"
           >
-            {isSubmitting ? 'Сохранение...' : (product ? 'Сохранить' : 'Добавить')}
+            {isSubmitting
+              ? 'Сохранение...'
+              : product
+                ? 'Сохранить'
+                : 'Добавить'}
           </Button>
 
         </div>
-
       </form>
     </div>
   );

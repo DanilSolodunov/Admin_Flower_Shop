@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/u
 import { Package, ShoppingCart, CheckCircle, BarChart3, Users } from 'lucide-react';
 import { productApi } from './api/api';
 import { orderApi } from './api/orderApi';
+import { createCourier } from "./api/courierApi";
 
 const menuItems = [
   { id: 'products' as const, label: 'Товары', icon: Package },
@@ -127,6 +128,22 @@ export default function App() {
 
     setIsFormOpen(false);
     setEditingCourier(null);
+  };
+
+
+  const handleSave = async (courierData: Courier) => {
+    try {
+      const token = localStorage.getItem("token"); // если используешь auth
+
+      const newCourier = await createCourier(courierData, token || undefined);
+
+      console.log("Создан курьер:", newCourier);
+
+      // обновить список / закрыть форму
+    } catch (error) {
+      console.error(error);
+      alert("Ошибка при создании курьера");
+    }
   };
 
   useEffect(() => {
@@ -401,7 +418,7 @@ export default function App() {
             </DialogTitle>
           </DialogHeader>
 
-          <CourierForm
+          {/* <CourierForm
             courier={editingCourier || undefined}
             onSave={(data) => {
               setCouriers((prev) => {
@@ -418,6 +435,45 @@ export default function App() {
 
               setIsCourierFormOpen(false);
               setEditingCourier(null);
+            }}
+            onCancel={() => {
+              setIsCourierFormOpen(false);
+              setEditingCourier(null);
+            }}
+          /> */}
+
+          <CourierForm
+            courier={editingCourier || undefined}
+            onSave={async (data) => {
+              try {
+                const token = localStorage.getItem("accessToken");
+
+                if (editingCourier) {
+                  // пока редактирование ТОЛЬКО локально
+                  setCouriers((prev) =>
+                    prev.map((c) =>
+                      c.id === editingCourier.id
+                        ? { ...c, ...data }
+                        : c
+                    )
+                  );
+                } else {
+                  // 🔥 отправка на сервер
+                  const newCourier = await createCourier(data, token || undefined);
+
+                  // 🔥 сохраняем и локально (твоя логика)
+                  setCouriers((prev) => [
+                    ...prev,
+                    newCourier || { ...data, id: Date.now() }
+                  ]);
+                }
+
+                setIsCourierFormOpen(false);
+                setEditingCourier(null);
+              } catch (error) {
+                console.error(error);
+                alert("Ошибка при создании курьера");
+              }
             }}
             onCancel={() => {
               setIsCourierFormOpen(false);

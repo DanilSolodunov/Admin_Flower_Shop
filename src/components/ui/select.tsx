@@ -136,7 +136,8 @@ export function SelectContent({
   return (
     <div
       className={clsx(
-        "absolute right-0 mt-2 w-48 bg-gray-100 border border-gray-100 text-slate-900 rounded-lg shadow-xl z-50 overflow-hidden",
+        // Добавлено: max-h-60 (макс. высота 15rem) + overflow-y-auto (вертикальный скролл при переполнении)
+        "absolute right-0 mt-2 left-0 right-0 bg-gray-100 border border-gray-100 text-slate-900 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto",
         className
       )}
     >
