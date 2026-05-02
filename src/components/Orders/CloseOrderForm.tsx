@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Order } from '../../types/Order';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
-import { useEffect } from 'react';
 import { StatusBadge } from '../ui/status-badge';
 import {
   Select,
@@ -13,12 +12,19 @@ import {
 } from '../ui/select';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
+interface Courier {
+  id: number;
+  name: string;
+  phone?: string;
+  transport?: string;
+}
+
 interface CloseOrderFormProps {
   order: Order;
   onClose: (
     orderId: number,
     status: Order['status'],
-    paymentMethod: 'наличный расчет' | 'online',
+    paymentMethod: 'Наличный' | 'online',
     courier: string | null,
     reason: string
   ) => void;
@@ -35,15 +41,39 @@ const REASONS = [
   'Доставка невозможна',
 ];
 
-const STATUSES: Order['status'][] = ['доставлен', 'отменен', 'возвращен'];
-
-export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps) {
+export function CloseOrderForm({
+  order,
+  onClose,
+  onCancel,
+}: CloseOrderFormProps) {
   const [reason, setReason] = useState('');
   const [status, setStatus] = useState<UIOrderStatus>('не выбран');
   const [paymentMethod, setPaymentMethod] =
-    useState<'наличный расчет' | 'online'>('наличный расчет');
-  const [courier, setCourier] = useState<string | null>(order.courier ?? '');
+    useState<'Наличный' | 'online'>('Наличный');
+
+  const [courier, setCourier] = useState<string | null>(
+    order.courier ?? ''
+  );
+
+  const [couriers, setCouriers] = useState<Courier[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  /*
+    Загружаем курьеров из localStorage
+  */
+  useEffect(() => {
+    const savedCouriers = localStorage.getItem('adminhub_couriers');
+
+    if (savedCouriers) {
+      try {
+        const parsedCouriers = JSON.parse(savedCouriers);
+        setCouriers(parsedCouriers);
+      } catch (error) {
+        console.error('Ошибка чтения курьеров из localStorage:', error);
+        setCouriers([]);
+      }
+    }
+  }, []);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -51,7 +81,8 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
     if (!reason) {
       newErrors.reason = 'Выберите причину закрытия';
     }
-    if (!status) {
+
+    if (status === 'не выбран') {
       newErrors.status = 'Выберите статус заказа';
     }
 
@@ -69,8 +100,15 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (validate()) {
-      onClose(order.id, status, paymentMethod, courier, reason);
+      onClose(
+        order.id,
+        status,
+        paymentMethod,
+        courier,
+        reason
+      );
     }
   };
 
@@ -79,9 +117,11 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
       case 'Успешная доставка':
         setStatus('доставлен');
         break;
+
       case 'Отмена клиентом':
         setStatus('возвращен');
         break;
+
       default:
         setStatus('отменен');
     }
@@ -90,16 +130,24 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
+
         {/* Причина закрытия */}
         <div className="space-y-2">
-          <Label htmlFor="reason">Причина закрытия заказа *</Label>
-          {/* <Select value={reason} onValueChange={setReason}> */}
+          <Label htmlFor="reason">
+            Причина закрытия заказа *
+          </Label>
 
-          <Select value={reason} onValueChange={setReason}>
-
-            <SelectTrigger id="reason" className={errors.reason ? 'border-red-500' : ''}>
+          <Select
+            value={reason}
+            onValueChange={setReason}
+          >
+            <SelectTrigger
+              id="reason"
+              className={errors.reason ? 'border-red-500' : ''}
+            >
               <SelectValue placeholder="Выберите причину" />
             </SelectTrigger>
+
             <SelectContent>
               {REASONS.map((r) => (
                 <SelectItem key={r} value={r}>
@@ -108,7 +156,12 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
               ))}
             </SelectContent>
           </Select>
-          {errors.reason && <p className="text-sm text-red-500">{errors.reason}</p>}
+
+          {errors.reason && (
+            <p className="text-sm text-red-500">
+              {errors.reason}
+            </p>
+          )}
         </div>
 
         {/* Статус заказа */}
@@ -120,51 +173,78 @@ export function CloseOrderForm({ order, onClose, onCancel }: CloseOrderFormProps
         {/* Способ оплаты */}
         <div className="space-y-3">
           <Label>Способ оплаты *</Label>
+
           <RadioGroup
             value={paymentMethod}
             onValueChange={(value) =>
-              setPaymentMethod(value as 'наличный расчет' | 'online')
+              setPaymentMethod(
+                value as 'Наличный' | 'online'
+              )
             }
             className="flex flex-col gap-3"
           >
-            <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
-              <RadioGroupItem value='наличный расчет'>Наличный расчет</RadioGroupItem>
-              {/* <Label htmlFor="cash" className="flex-1 cursor-pointer font-normal">
+            <div className="flex items-center space-x-2 border p-3 rounded-lg">
+              <RadioGroupItem value="Наличный">
                 Наличный расчет
-              </Label> */}
+              </RadioGroupItem>
             </div>
-            <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
-              <RadioGroupItem value="online"> online </RadioGroupItem>
-              {/* <Label htmlFor="online" className="flex-1 cursor-pointer font-normal">
-                Онлайн оплата
-              </Label> */}
+
+            <div className="flex items-center space-x-2 border p-3 rounded-lg">
+              <RadioGroupItem value="online">
+                online
+              </RadioGroupItem>
             </div>
           </RadioGroup>
-          {errors.paymentMethod && <p className="text-sm text-red-500">{errors.paymentMethod}</p>}
         </div>
 
-        {/* Курьер (оставляем для удобства) */}
+        {/* Курьер */}
         <div className="space-y-2">
-          <Label htmlFor="courier">Курьер</Label>
-          <Select value={courier ?? ''} onValueChange={(val) => setCourier(val || null)}>
+          <Label htmlFor="courier">
+            Курьер
+          </Label>
+
+          <Select
+            value={courier ?? ''}
+            onValueChange={(val) =>
+              setCourier(val || null)
+            }
+          >
             <SelectTrigger id="courier">
-              <SelectValue />
+              <SelectValue placeholder="Выберите курьера" />
             </SelectTrigger>
+
             <SelectContent>
-              <SelectItem value="Курьер 1">Курьер 1</SelectItem>
-              <SelectItem value="Курьер 2">Курьер 2</SelectItem>
-              <SelectItem value="Курьер 3">Курьер 3</SelectItem>
-              <SelectItem value="">Не назначен</SelectItem>
+              {couriers.map((item) => (
+                <SelectItem
+                  key={item.id}
+                  value={item.name}
+                >
+                  {item.name}
+                </SelectItem>
+              ))}
+
+              <SelectItem value="">
+                Не назначен
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       <div className="flex gap-3 pt-4">
-        <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+        <Button
+          type="submit"
+          className="flex-1 bg-blue-600 hover:bg-blue-700"
+        >
           Подтвердить закрытие
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          className="flex-1"
+        >
           Отмена
         </Button>
       </div>

@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/u
 import { Package, ShoppingCart, CheckCircle, BarChart3, Users } from 'lucide-react';
 import { productApi } from './api/api';
 import { orderApi } from './api/orderApi';
-import { createCourier } from "./api/courierApi";
+import { createCourier, getAllCouriers, updateCourier, deleteCourier } from "./api/courierApi";
 
 const menuItems = [
   { id: 'products' as const, label: 'Товары', icon: Package },
@@ -42,7 +42,6 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-  // Загрузка товаров с сервера при монтировании
   useEffect(() => {
     loadProducts();
   }, []);
@@ -62,7 +61,6 @@ export default function App() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
 
-  // Загрузка заказов с сервера
   useEffect(() => {
     loadOrders();
   }, []);
@@ -79,11 +77,9 @@ export default function App() {
     }
   };
 
-  const [couriers, setCouriers] = useState<Courier[]>(() => {
-    const saved = localStorage.getItem('adminhub_couriers');
-    return saved ? JSON.parse(saved) : [];
-  });
+  // const [couriers, setCouriers] = useState<Courier[]>([]);
 
+  const [couriers, setCouriers] = useState<Courier[]>([]);
   const [currentView, setCurrentView] = useState<'products' | 'new_orders' | 'completed_orders' | 'couriers' | 'reports'>('products');
 
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
@@ -91,6 +87,73 @@ export default function App() {
 
   const [closingOrder, setClosingOrder] = useState<Order | undefined>(undefined);
   const [isCloseOrderFormOpen, setIsCloseOrderFormOpen] = useState(false);
+
+  useEffect(() => {
+    loadCouriers();
+  }, []);
+
+  const loadCouriers = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      const data = await getAllCouriers(token || undefined);
+
+      setCouriers(data);
+
+      localStorage.setItem(
+        "adminhub_couriers",
+        JSON.stringify(data)
+      );
+    } catch (error) {
+      console.error("Ошибка загрузки курьеров:", error);
+
+      const saved = localStorage.getItem("adminhub_couriers");
+      if (saved) {
+        setCouriers(JSON.parse(saved));
+      }
+    }
+  };
+
+  const handleCloseOrder = async (
+    orderId: number,
+    status: Order["status"],
+    paymentMethod: "Наличный" | "online",
+    courier: string | null,
+    reason: string
+  ) => {
+    try {
+      await orderApi.closeOrder({
+        id: orderId,
+        status,
+        courier,
+        paymentMethod,
+        reason,
+      });
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? {
+              ...o,
+              status,
+              paymentMethod,
+              courier: courier ?? null,
+              reason,
+            }
+            : o
+        )
+      );
+
+      setIsCloseOrderFormOpen(false);
+      setClosingOrder(undefined);
+
+      await loadOrders();
+
+      console.log("Заказ успешно закрыт");
+    } catch (error) {
+      console.error("Ошибка закрытия заказа:", error);
+    }
+  };
 
   const [viewingOrder, setViewingOrder] = useState<Order | undefined>(undefined);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
@@ -109,42 +172,6 @@ export default function App() {
   );
 
   const [isCourierFormOpen, setIsCourierFormOpen] = useState(false);
-
-  const handleSaveCourier = (data: Omit<Courier, 'id'>) => {
-    if (editingCourier) {
-      setCouriers(prev =>
-        prev.map(c =>
-          c.id === editingCourier.id
-            ? { ...c, ...data }
-            : c
-        )
-      );
-    } else {
-      setCouriers(prev => [
-        ...prev,
-        { ...data, id: Date.now() }
-      ]);
-    }
-
-    setIsFormOpen(false);
-    setEditingCourier(null);
-  };
-
-
-  const handleSave = async (courierData: Courier) => {
-    try {
-      const token = localStorage.getItem("token"); // если используешь auth
-
-      const newCourier = await createCourier(courierData, token || undefined);
-
-      console.log("Создан курьер:", newCourier);
-
-      // обновить список / закрыть форму
-    } catch (error) {
-      console.error(error);
-      alert("Ошибка при создании курьера");
-    }
-  };
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -229,7 +256,6 @@ export default function App() {
               setIsProductFormOpen(true);
             }}
             onDelete={async (id) => {
-              // TODO: добавить API удаления на сервере
               setProducts(products.filter((p) => p.id !== id));
             }}
           />
@@ -248,11 +274,14 @@ export default function App() {
           <>
             <OrderTable
               orders={activeOrders}
+              // couriers={couriers}
               onCloseOrder={(o) => {
                 setClosingOrder(o);
                 setIsCloseOrderFormOpen(true);
+                
               }}
               showActions
+              couriers={couriers}
             />
           </>
         )}
@@ -269,6 +298,7 @@ export default function App() {
         ) : (
           <OrderTable
             orders={completedOrders}
+            couriers={couriers}
             onCloseOrder={() => { }}
             showActions={false}
           />
@@ -283,12 +313,25 @@ export default function App() {
         <CourierList
           couriers={couriers}
           onEdit={(courier) => {
-            console.log('OPEN EDIT', courier);
-            setEditingCourier(courier);
+            setEditingCourier({ ...courier });
             setIsCourierFormOpen(true);
           }}
-          onDelete={(id) => {
-            setCouriers(prev => prev.filter(c => c.id !== id));
+          // onDelete={(id) => {
+          //   setCouriers(prev => prev.filter(c => c.id !== id));
+          // }}
+          onDelete={async (id) => {
+            try {
+              const token = localStorage.getItem("accessToken");
+
+              await deleteCourier(id, token || undefined);
+
+              setCouriers(prev => prev.filter(c => c.id !== id));
+
+              await loadCouriers();
+            } catch (error) {
+              console.error("Ошибка удаления курьера:", error);
+              alert("Не удалось удалить курьера");
+            }
           }}
           onAdd={() => {
             setEditingCourier(null);
@@ -357,16 +400,7 @@ export default function App() {
           {closingOrder && (
             <CloseOrderForm
               order={closingOrder}
-              onClose={async (id, status, paymentMethod, courier, reason) => {
-                const courierString = String(courier);
-                setOrders(orders.map(o =>
-                  o.id === id ? { ...o, status, paymentMethod, courier: courierString, reason } : o
-                ));
-                setIsCloseOrderFormOpen(false);
-                setClosingOrder(undefined);
-                // Перезагружаем заказы с сервера
-                await loadOrders();
-              }}
+              onClose={handleCloseOrder}
               onCancel={() => {
                 setIsCloseOrderFormOpen(false);
                 setClosingOrder(undefined);
@@ -404,6 +438,7 @@ export default function App() {
                 await loadOrders();
               }}
               onClose={() => setIsOrderDetailsOpen(false)}
+              // couriers={couriers}
             />
           )}
         </DialogContent>
@@ -417,62 +452,59 @@ export default function App() {
               {editingCourier ? 'Редактировать курьера' : 'Добавить курьера'}
             </DialogTitle>
           </DialogHeader>
-
-          {/* <CourierForm
-            courier={editingCourier || undefined}
-            onSave={(data) => {
-              setCouriers((prev) => {
-                if (editingCourier) {
-                  return prev.map((c) =>
-                    c.id === editingCourier.id
-                      ? { ...c, ...data }
-                      : c
-                  );
-                } else {
-                  return [...prev, { ...data, id: Date.now() }];
-                }
-              });
-
-              setIsCourierFormOpen(false);
-              setEditingCourier(null);
-            }}
-            onCancel={() => {
-              setIsCourierFormOpen(false);
-              setEditingCourier(null);
-            }}
-          /> */}
-
           <CourierForm
             courier={editingCourier || undefined}
             onSave={async (data) => {
               try {
                 const token = localStorage.getItem("accessToken");
 
-                if (editingCourier) {
-                  // пока редактирование ТОЛЬКО локально
-                  setCouriers((prev) =>
-                    prev.map((c) =>
-                      c.id === editingCourier.id
-                        ? { ...c, ...data }
-                        : c
-                    )
-                  );
-                } else {
-                  // 🔥 отправка на сервер
-                  const newCourier = await createCourier(data, token || undefined);
+                let updatedCouriers;
 
-                  // 🔥 сохраняем и локально (твоя логика)
-                  setCouriers((prev) => [
-                    ...prev,
-                    newCourier || { ...data, id: Date.now() }
-                  ]);
+                if (editingCourier) {
+                  // UPDATE через сервер
+                  const updated = await updateCourier(
+                    editingCourier.id,
+                    data,
+                    token || undefined
+                  );
+
+                  updatedCouriers = couriers.map((c) =>
+                    c.id === editingCourier.id ? updated : c
+                  );
+
+                } else {
+                  // CREATE через сервер
+                  const savedCourier = await createCourier(
+                    data,
+                    token || undefined
+                  );
+
+                  const normalizedCourier = {
+                    id: savedCourier.id,
+                    name: savedCourier.name,
+                    phone: savedCourier.phone,
+                    status: savedCourier.status,
+                  };
+
+                  updatedCouriers = [...couriers, normalizedCourier];
                 }
+
+                setCouriers(updatedCouriers);
+
+                localStorage.setItem(
+                  "adminhub_couriers",
+                  JSON.stringify(updatedCouriers)
+                );
+
+                // ОБЯЗАТЕЛЬНО синхронизируем с сервером
+                await loadCouriers();
 
                 setIsCourierFormOpen(false);
                 setEditingCourier(null);
+
               } catch (error) {
                 console.error(error);
-                alert("Ошибка при создании курьера");
+                alert("Ошибка сохранения курьера");
               }
             }}
             onCancel={() => {

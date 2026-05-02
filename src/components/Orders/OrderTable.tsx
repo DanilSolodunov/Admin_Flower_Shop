@@ -12,11 +12,20 @@ import {
 import { Eye, XCircle } from 'lucide-react';
 import { OrderDetails } from './OrderDetails';
 import { Dialog, DialogContent } from '../ui/dialog';
+import { Courier } from '../../types/Courier';
+
+// interface OrderTableProps {
+//   orders: Order[];
+//   onCloseOrder: (order: Order) => void;
+//   showActions?: boolean;
+// }
 
 interface OrderTableProps {
   orders: Order[];
   onCloseOrder: (order: Order) => void;
   showActions?: boolean;
+  // couriers: Courier[];
+  couriers?: { id: number; name: string }[]
 }
 
 export function OrderTable({
@@ -127,8 +136,20 @@ export function OrderTable({
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="w-full max-w-4xl">
           {selectedOrder && (
+            // <OrderDetails
+            //   order={selectedOrder}
+            //   onAssignCourier={(courierId) => {
+            //   }}
+            //   onChangeStatus={(status) => {
+            //     setSelectedOrder((prev) => prev ? { ...prev, status } : prev);
+            //   }}
+            //   onClose={() => setDetailsOpen(false)}
+            //   couriers={couriers}
+            // />
+
             <OrderDetails
               order={selectedOrder}
+               // или передай реальные курьеры, если есть в пропсах
               onAssignCourier={(courierId) => {
               }}
               onChangeStatus={(status) => {
