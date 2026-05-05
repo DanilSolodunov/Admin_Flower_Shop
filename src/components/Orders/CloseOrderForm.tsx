@@ -16,7 +16,8 @@ interface Courier {
   id: number;
   name: string;
   phone?: string;
-  transport?: string;
+  role?: string;
+  status?: string;
 }
 
 interface CloseOrderFormProps {
@@ -25,7 +26,7 @@ interface CloseOrderFormProps {
     orderId: number,
     status: Order['status'],
     paymentMethod: 'Наличный' | 'online',
-    courier: string | null,
+    courier: Courier | null,
     reason: string
   ) => void;
   onCancel: () => void;
@@ -51,16 +52,13 @@ export function CloseOrderForm({
   const [paymentMethod, setPaymentMethod] =
     useState<'Наличный' | 'online'>('Наличный');
 
-  const [courier, setCourier] = useState<string | null>(
-    order.courier ?? ''
+  const [courier, setCourier] = useState<number | null>(
+    order.courier?.id ?? null
   );
 
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  /*
-    Загружаем курьеров из localStorage
-  */
   useEffect(() => {
     const savedCouriers = localStorage.getItem('adminhub_couriers');
 
@@ -98,19 +96,37 @@ export function CloseOrderForm({
     }
   }, [reason]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
 
-    if (validate()) {
-      onClose(
-        order.id,
-        status,
-        paymentMethod,
-        courier,
-        reason
-      );
-    }
-  };
+  //   if (validate()) {
+  //     onClose(
+  //       order.id,
+  //       status,
+  //       paymentMethod,
+  //       courier,
+  //       reason
+  //     );
+  //   }
+  // };
+
+
+  const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (validate()) {
+    const selectedCourier =
+      couriers.find((item) => item.id === courier) || null;
+
+    onClose(
+      order.id,
+      status,
+      paymentMethod,
+      selectedCourier,
+      reason
+    );
+  }
+};
 
   const updateStatusByReason = () => {
     switch (reason) {
@@ -202,30 +218,29 @@ export function CloseOrderForm({
           <Label htmlFor="courier">
             Курьер
           </Label>
-
           <Select
-            value={courier ?? ''}
-            onValueChange={(val) =>
-              setCourier(val || null)
+            value={courier ? String(courier) : ""}
+            onValueChange={(value) =>
+              setCourier(value ? Number(value) : null)
             }
           >
-            <SelectTrigger id="courier">
-              <SelectValue placeholder="Выберите курьера" />
+            <SelectTrigger className="w-full bg-white text-black border border-slate-300">
+              <span>
+                {couriers.find(
+                  (item) => item.id === courier
+                )?.name || "Выберите курьера"}
+              </span>
             </SelectTrigger>
 
-            <SelectContent>
+            <SelectContent className="bg-white text-slate-900 border border-slate-300">
               {couriers.map((item) => (
                 <SelectItem
                   key={item.id}
-                  value={item.name}
+                  value={String(item.id)}
                 >
                   {item.name}
                 </SelectItem>
               ))}
-
-              <SelectItem value="">
-                Не назначен
-              </SelectItem>
             </SelectContent>
           </Select>
         </div>

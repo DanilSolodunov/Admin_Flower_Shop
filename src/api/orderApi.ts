@@ -1,58 +1,6 @@
-// import { api } from "./api";
-// import { Order } from "../types/Order";
-
-// export interface OrderResponse {
-//   id: number;
-//   date: string;
-//   status: string;
-//   total: number;
-//   address: string;
-//   items: {
-//     productId: number;
-//     name: string;
-//     description: string;
-//     price: number;
-//     quantity: number;
-//     image: string;
-//   }[];
-// }
-
-// export const orderApi = {
-//   // Получить все заказы текущего пользователя
-//   getAllOrders: async (): Promise<Order[]> => {
-//     const token = localStorage.getItem("accessToken");
-//     console.log('Токен для запроса:', token ? 'Есть' : 'Нет');
-
-//     const response = await api.get<OrderResponse[]>("/orders/supplier");
-//     console.log('С сервера получены заказы:', response.data);
-
-//     // Преобразуем OrderResponse[] в Order[]
-//     return response.data.map(order => ({
-//       id: order.id,
-//       date: order.date,
-//       status: order.status,
-//       total: order.total,
-//       courier: null,
-//       paymentMethod: null,
-//       address: order.address,
-//       reason: undefined,
-//       products: order.items.map(item => ({
-//         id: item.productId,
-//         name: item.name,
-//         description: item.description,
-//         price: item.price,
-//         amount: item.quantity,
-//         image: item.image && !item.image.startsWith('http')
-//           ? `http://localhost:8080${item.image}`
-//           : item.image,
-//       })),
-//     }));
-//   },
-// };
-
-
 import { api } from "./api";
 import { Order } from "../types/Order";
+import { Courier } from "../types/Courier";
 
 export interface OrderResponse {
   id: number;
@@ -60,6 +8,7 @@ export interface OrderResponse {
   status: string;
   total: number;
   address: string;
+  courier: Courier | null;
   items: {
     productId: number;
     name: string;
@@ -70,32 +19,44 @@ export interface OrderResponse {
   }[];
 }
 
-export interface CloseOrderRequest {
+export interface UpdateOrderRequest {
   id: number;
   status: string;
-  courier: string | null;
+  courierId?: number | null;
   paymentMethod?: string;
   reason?: string;
 }
 
 export const orderApi = {
-  // Получить все заказы текущего пользователя
+  /*
+    Получить все заказы
+  */
   getAllOrders: async (): Promise<Order[]> => {
     const token = localStorage.getItem("accessToken");
-    console.log("Токен для запроса:", token ? "Есть" : "Нет");
 
-    const response = await api.get<OrderResponse[]>("/orders/supplier");
-    console.log("С сервера получены заказы:", response.data);
+    console.log(
+      "Токен для запроса:",
+      token ? "Есть" : "Нет"
+    );
+
+    const response =
+      await api.get<OrderResponse[]>("/orders/supplier");
+
+    console.log(
+      "С сервера получены заказы:",
+      response.data
+    );
 
     return response.data.map((order) => ({
       id: order.id,
       date: order.date,
       status: order.status,
       total: order.total,
-      courier: null,
+      courier: order.courier ?? null,
       paymentMethod: null,
       address: order.address,
       reason: undefined,
+
       products: order.items.map((item) => ({
         id: item.productId,
         name: item.name,
@@ -103,39 +64,65 @@ export const orderApi = {
         price: item.price,
         amount: item.quantity,
         image:
-          item.image && !item.image.startsWith("http")
+          item.image &&
+          !item.image.startsWith("http")
             ? `http://localhost:8080${item.image}`
             : item.image,
       })),
     }));
   },
 
-  // Закрытие заказа
-  closeOrder: async ({
+  updateOrder: async ({
     id,
     status,
-    courier,
+    courierId,
     paymentMethod,
     reason,
-  }: CloseOrderRequest): Promise<Order> => {
-    console.log("Отправка закрытия заказа:", {
+  }: UpdateOrderRequest): Promise<Order> => {
+    const requestBody = {
       id,
       status,
-      courier,
+      courierId,
       paymentMethod,
       reason,
+    };
+
+    console.log("Отправляем запрос:", {
+      url: `/orders/supplier/${id}`,
+      body: requestBody,
     });
 
-    const response = await api.put(`/orders/supplier/${id}`, {
-      id,
-      status,
-      courier,
-      paymentMethod,
-      reason,
-    });
+    try {
+      const response = await api.put(
+        `/orders/supplier/${id}`,
+        requestBody
+      );
 
-    console.log("Заказ успешно закрыт:", response.data);
+      console.log(
+        "Заказ успешно обновлён:",
+        response.data
+      );
 
-    return response.data;
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Ошибка обновления заказа:",
+        error?.response?.data || error.message
+      );
+
+      throw new Error(
+        error?.response?.data?.message ||
+          "Ошибка при обновлении заказа"
+      );
+    }
+  },
+
+  /*
+    Для совместимости можно оставить alias
+  */
+  closeOrder: async (
+    request: UpdateOrderRequest
+  ): Promise<Order> => {
+    return orderApi.updateOrder(request);
   },
 };

@@ -25,7 +25,7 @@ interface OrderTableProps {
   onCloseOrder: (order: Order) => void;
   showActions?: boolean;
   // couriers: Courier[];
-  couriers?: { id: number; name: string }[]
+  couriers?: { courierId: number; name: string }[]
 }
 
 export function OrderTable({
@@ -96,7 +96,7 @@ export function OrderTable({
 
                   <p className="text-xs text-slate-400">
                     Курьер:{' '}
-                    <span className="text-slate-200">{order.courier || '—'}</span>
+                    <span className="text-slate-200">{order.courier?.name || '—'}</span>
                   </p>
                 </div>
 

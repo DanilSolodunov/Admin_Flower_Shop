@@ -118,7 +118,7 @@ export default function App() {
     orderId: number,
     status: Order["status"],
     paymentMethod: "Наличный" | "online",
-    courier: string | null,
+    courier: Courier | null,
     reason: string
   ) => {
     try {
@@ -278,7 +278,7 @@ export default function App() {
               onCloseOrder={(o) => {
                 setClosingOrder(o);
                 setIsCloseOrderFormOpen(true);
-                
+
               }}
               showActions
               couriers={couriers}
@@ -325,7 +325,7 @@ export default function App() {
 
               await deleteCourier(id, token || undefined);
 
-              setCouriers(prev => prev.filter(c => c.id !== id));
+              setCouriers(prev => prev.filter(c => c.courier !== id));
 
               await loadCouriers();
             } catch (error) {
@@ -420,13 +420,25 @@ export default function App() {
           {viewingOrder && (
             <OrderDetails
               order={viewingOrder}
+              // onAssignCourier={async (courier) => {
+              //   const courierString = String(courier);
+              //   setOrders((prevOrders) =>
+              //     prevOrders.map((o) =>
+              //       o.id === viewingOrder.id ? { ...o, courier: courierString } : o
+              //     )
+              //   );
+              //   await loadOrders();
+              // }}
+
               onAssignCourier={async (courier) => {
-                const courierString = String(courier);
                 setOrders((prevOrders) =>
                   prevOrders.map((o) =>
-                    o.id === viewingOrder.id ? { ...o, courier: courierString } : o
+                    o.id === viewingOrder.id
+                      ? { ...o, courier }
+                      : o
                   )
                 );
+
                 await loadOrders();
               }}
               onChangeStatus={async (status) => {
@@ -438,7 +450,7 @@ export default function App() {
                 await loadOrders();
               }}
               onClose={() => setIsOrderDetailsOpen(false)}
-              // couriers={couriers}
+            // couriers={couriers}
             />
           )}
         </DialogContent>

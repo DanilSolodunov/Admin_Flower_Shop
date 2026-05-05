@@ -7,7 +7,16 @@ export interface Order {
   status: string;
   date: string;
   paymentMethod: 'Наличный' | 'online' | null;
-  courier: string | null;
-  reason?: string; 
+
+  courier: {
+    id: number;
+    name: string;
+    phone?: string;
+    role?: string;
+    status?: string;
+  } | null;
+
+  // courierId: number | null;
   address: string;
+  reason?: string;
 }
