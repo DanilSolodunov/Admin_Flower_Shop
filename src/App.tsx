@@ -77,8 +77,6 @@ export default function App() {
     }
   };
 
-  // const [couriers, setCouriers] = useState<Courier[]>([]);
-
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [currentView, setCurrentView] = useState<'products' | 'new_orders' | 'completed_orders' | 'couriers' | 'reports'>('products');
 
@@ -316,9 +314,6 @@ export default function App() {
             setEditingCourier({ ...courier });
             setIsCourierFormOpen(true);
           }}
-          // onDelete={(id) => {
-          //   setCouriers(prev => prev.filter(c => c.id !== id));
-          // }}
           onDelete={async (id) => {
             try {
               const token = localStorage.getItem("accessToken");
@@ -420,16 +415,6 @@ export default function App() {
           {viewingOrder && (
             <OrderDetails
               order={viewingOrder}
-              // onAssignCourier={async (courier) => {
-              //   const courierString = String(courier);
-              //   setOrders((prevOrders) =>
-              //     prevOrders.map((o) =>
-              //       o.id === viewingOrder.id ? { ...o, courier: courierString } : o
-              //     )
-              //   );
-              //   await loadOrders();
-              // }}
-
               onAssignCourier={async (courier) => {
                 setOrders((prevOrders) =>
                   prevOrders.map((o) =>
@@ -449,9 +434,7 @@ export default function App() {
                 );
                 await loadOrders();
               }}
-              onClose={() => setIsOrderDetailsOpen(false)}
-            // couriers={couriers}
-            />
+              onClose={() => setIsOrderDetailsOpen(false)}            />
           )}
         </DialogContent>
       </Dialog>
@@ -473,7 +456,6 @@ export default function App() {
                 let updatedCouriers;
 
                 if (editingCourier) {
-                  // UPDATE через сервер
                   const updated = await updateCourier(
                     editingCourier.id,
                     data,
@@ -485,7 +467,6 @@ export default function App() {
                   );
 
                 } else {
-                  // CREATE через сервер
                   const savedCourier = await createCourier(
                     data,
                     token || undefined
@@ -508,7 +489,6 @@ export default function App() {
                   JSON.stringify(updatedCouriers)
                 );
 
-                // ОБЯЗАТЕЛЬНО синхронизируем с сервером
                 await loadCouriers();
 
                 setIsCourierFormOpen(false);

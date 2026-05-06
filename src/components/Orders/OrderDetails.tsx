@@ -42,12 +42,12 @@ export function OrderDetails({
   onChangeStatus,
   onClose,
 }: OrderDetailsProps) {
-  // const [courier, setCourier] = useState<string>('');
   const [courierId, setCourierId] = useState<number | null>(null);
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     const savedCouriers = localStorage.getItem('adminhub_couriers');
@@ -75,7 +75,6 @@ export function OrderDetails({
 
   useEffect(() => {
     if (order) {
-      // setCourier(order.courier ?? '');
       setCourierId(order.courier?.id ?? null);
       setSelectedStatus(order.status ?? '');
     }
@@ -115,13 +114,6 @@ export function OrderDetails({
         courierId: courierId ?? null,
       });
 
-      // onAssignCourier(courier);
-
-      // const selectedCourier = couriers.find(
-      //   (item) => item.id === courierId
-      // );
-
-      // onAssignCourier(selectedCourier.id || '');
       const selectedCourier = couriers.find(
         (item) => item.id === courierId
       );
@@ -220,12 +212,11 @@ export function OrderDetails({
                         {product?.image && (
                           <img
                             src={product.image}
-                            alt={product.description || ''}
-                            className="w-full h-full object-cover"
+                            alt={product.name || ''}
+                            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition"
+                            onClick={() => setPreviewImage(product.image)}
                             onError={(e) => {
-                              (
-                                e.target as HTMLImageElement
-                              ).style.display = 'none';
+                              (e.target as HTMLImageElement).style.display = 'none';
                             }}
                           />
                         )}
@@ -233,7 +224,7 @@ export function OrderDetails({
 
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 truncate">
-                          {product?.description || '—'}
+                          {product?.name || '—'}
                         </p>
 
                         <p className="text-xs text-slate-500">
@@ -252,6 +243,19 @@ export function OrderDetails({
                   </div>
                 );
               })}
+
+              {previewImage && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+                  onClick={() => setPreviewImage(null)}
+                >
+                  <img
+                    src={previewImage}
+                    className="max-w-[90%] max-h-[90%] object-contain rounded-lg shadow-lg"
+                    alt="preview"
+                  />
+                </div>
+              )}
             </div>
           )}
         </CardContent>
