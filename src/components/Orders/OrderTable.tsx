@@ -18,7 +18,7 @@ interface OrderTableProps {
   orders: Order[];
   onCloseOrder: (order: Order) => void;
   showActions?: boolean;
-  couriers?: { courierId: number; name: string }[]
+  couriers?: { courier: Courier; name: string }[]
 }
 
 export function OrderTable({

@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import { api } from '../../api/api';
+import { authApi } from '../../api/authApi';
 
 interface RegisterResponse {
   message: string;
@@ -54,7 +54,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
         if (password !== confirmPassword) throw new Error('Пароли не совпадают');
         if (password.length < 6) throw new Error('Минимум 6 символов');
 
-        await api.post<RegisterResponse>('/auth/register', {
+        await authApi.post<RegisterResponse>('/auth/register', {
           name: username,
           email,
           password,
@@ -62,7 +62,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
         });
       }
 
-      const response = await api.post<LoginResponse>('/auth/login', {
+      const response = await authApi.post<LoginResponse>('/auth/login', {
         email,
         password,
         role: 'ADMIN',

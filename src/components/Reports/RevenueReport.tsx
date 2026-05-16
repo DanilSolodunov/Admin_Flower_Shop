@@ -1,120 +1,58 @@
-import { useState, useMemo } from 'react';
-import { Order } from '../../types/Order';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { Calendar, DollarSign, ShoppingCart, TrendingUp, Infinity } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import {
-  startOfDay,
-  endOfDay,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
-  format
-} from 'date-fns';
-import { ru } from 'date-fns/locale';
+  Calendar,
+  DollarSign,
+  ShoppingCart,
+  TrendingUp,
+} from "lucide-react";
 
-type PeriodType = 'day' | 'week' | 'month' | 'year' | 'all';
+import {
+  getRevenueReport,
+  RevenueResponse,
+  PeriodType,
+} from "../../api/revenueApi";
 
-interface RevenueReportProps {
-  orders: Order[];
-}
+export function RevenueReport() {
+  const [period, setPeriod] = useState<PeriodType>("day");
+  const [reportData, setReportData] = useState<RevenueResponse[]>([]);
+  const [loading, setLoading] = useState(false);
 
-export function RevenueReport({ orders }: RevenueReportProps) {
-  // Изменено начальное значение на 'day'
-  const [period, setPeriod] = useState<PeriodType>('day');
-
-  // Форматирование валюты
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
+    return new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
       minimumFractionDigits: 0,
-    }).format(amount);
+    }).format(amount || 0);
   };
 
-  // Вычисляем диапазон дат на основе выбранного периода
-  const dateRange = useMemo(() => {
-    const now = new Date();
-    let start: Date;
-    let end: Date;
+  const loadRevenueData = async () => {
+    try {
+      setLoading(true);
 
-    switch (period) {
-      case 'day':
-        start = startOfDay(now);
-        end = endOfDay(now);
-        break;
-      case 'week':
-        start = startOfWeek(now, { weekStartsOn: 1 });
-        end = endOfWeek(now, { weekStartsOn: 1 });
-        break;
-      case 'month':
-        start = startOfMonth(now);
-        end = endOfMonth(now);
-        break;
-      case 'year':
-        start = startOfYear(now);
-        end = endOfYear(now);
-        break;
-      case 'all':
-        start = new Date(0);
-        end = new Date();
-        break;
-      default:
-        start = startOfDay(now);
-        end = endOfDay(now);
+      const data = await getRevenueReport(period);
+
+      setReportData(data);
+    } catch (error) {
+      console.error("Ошибка загрузки отчета:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return { start, end };
+  useEffect(() => {
+    loadRevenueData();
   }, [period]);
 
-  // Форматирование диапазона дат для отображения
-  const dateRangeDisplay = useMemo(() => {
-    if (period === 'all') {
-      return 'За все время';
-    }
+  const totalRevenue =
+    reportData.length > 0 ? reportData[0].totalRevenue : 0;
 
-    const { start, end } = dateRange;
+  const orderCount =
+    reportData.length > 0 ? reportData[0].count : 0;
 
-    // Если даты совпадают (день)
-    if (start.getTime() === end.getTime() || period === 'day') {
-      return format(start, 'd MMMM yyyy', { locale: ru });
-    }
-
-    // Если год
-    if (period === 'year') {
-      return format(start, 'yyyy', { locale: ru });
-    }
-
-    // Иначе диапазон
-    return `${format(start, 'd MMMM', { locale: ru })} — ${format(end, 'd MMMM yyyy', { locale: ru })}`;
-  }, [dateRange, period]);
-
-  // Логика фильтрации и подсчета
-  const reportData = useMemo(() => {
-    // Фильтруем только завершенные заказы
-    const completedOrders = orders.filter(order => order.status === 'доставлен');
-
-    // Фильтруем по вычисленному диапазону дат
-    const filteredOrders = completedOrders.filter(order => {
-      const orderDate = new Date(order.date);
-      return orderDate >= dateRange.start && orderDate <= dateRange.end;
-    });
-
-    // Подсчет метрик
-    const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
-    const orderCount = filteredOrders.length;
-    const avgCheck = orderCount > 0 ? totalRevenue / orderCount : 0;
-
-    return {
-      totalRevenue,
-      orderCount,
-      avgCheck,
-      filteredOrders,
-    };
-  }, [orders, dateRange]);
+  const averageCheck =
+    reportData.length > 0 ? reportData[0].average : 0;
 
   return (
     <div className="space-y-6">
@@ -129,42 +67,37 @@ export function RevenueReport({ orders }: RevenueReportProps) {
             Выберите период для формирования отчета о выручке
           </CardDescription>
         </CardHeader>
+
         <CardContent>
-          <div className="flex flex-col gap-6">
-            <RadioGroup
-              value={period}
-              onValueChange={(value) => setPeriod(value as PeriodType)}
-            >
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                <RadioGroupItem value="day">День</RadioGroupItem>
-                <RadioGroupItem value="week">Неделя</RadioGroupItem>
-                <RadioGroupItem value="month">Месяц</RadioGroupItem>
-                <RadioGroupItem value="year">Год</RadioGroupItem>
-                <RadioGroupItem value="all">Все время</RadioGroupItem>
-              </div>
-            </RadioGroup>
-
-          </div>
+          <RadioGroup
+            value={period}
+            onValueChange={(value) => setPeriod(value as PeriodType)}
+          >
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <RadioGroupItem value="day">День</RadioGroupItem>
+              <RadioGroupItem value="week">Неделя</RadioGroupItem>
+              <RadioGroupItem value="month">Месяц</RadioGroupItem>
+              <RadioGroupItem value="year">Год</RadioGroupItem>
+              <RadioGroupItem value="all">Все время</RadioGroupItem>
+            </div>
+          </RadioGroup>
         </CardContent>
-
-
       </Card>
 
       {/* Метрики */}
       <div className="grid gap-4 md:grid-cols-3">
         {/* Общая выручка */}
         <Card className="bg-gradient-to-br from-blue-800/40 to-slate-900 border border-blue-800/40">
-
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">
+            <CardTitle className="text-sm font-medium text-slate-200">
               Общая выручка
             </CardTitle>
             <DollarSign className="h-4 w-4 text-blue-400" />
-
           </CardHeader>
+
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {formatCurrency(reportData.totalRevenue)}
+              {loading ? "Загрузка..." : formatCurrency(totalRevenue)}
             </div>
             <p className="text-xs text-slate-200 mt-1">
               За выбранный период
@@ -174,16 +107,16 @@ export function RevenueReport({ orders }: RevenueReportProps) {
 
         {/* Количество заказов */}
         <Card className="bg-gradient-to-br from-emerald-800/40 to-slate-900 border border-emerald-800/40">
-
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-200">
               Завершено заказов
             </CardTitle>
             <ShoppingCart className="h-4 w-4 text-emerald-600" />
           </CardHeader>
+
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {reportData.orderCount}
+              {loading ? "..." : orderCount}
             </div>
             <p className="text-xs text-slate-200 mt-1">
               Статус: "Доставлен"
@@ -193,17 +126,16 @@ export function RevenueReport({ orders }: RevenueReportProps) {
 
         {/* Средний чек */}
         <Card className="bg-gradient-to-br from-violet-800/40 to-slate-900 border border-violet-800/40">
-
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">
+            <CardTitle className="text-sm font-medium text-slate-200">
               Средний чек
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-violet-400" />
-
           </CardHeader>
+
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {formatCurrency(reportData.avgCheck)}
+              {loading ? "..." : formatCurrency(averageCheck)}
             </div>
             <p className="text-xs text-slate-200 mt-1">
               На один заказ
@@ -211,71 +143,6 @@ export function RevenueReport({ orders }: RevenueReportProps) {
           </CardContent>
         </Card>
       </div>
-
-      {/* Детализация */}
-      {reportData.filteredOrders.length > 0 && (
-        <Card className="border-slate-200">
-          <CardHeader>
-            <CardTitle>Детализация заказов</CardTitle>
-            <CardDescription>
-              {period === 'all'
-                ? `Полный список завершенных заказов (${reportData.filteredOrders.length})`
-                : `Список заказов за период: ${dateRangeDisplay} (${reportData.filteredOrders.length})`
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left py-3 px-4 font-medium text-slate-400">Дата</th>
-                    <th className="text-left py-3 px-4 font-medium text-slate-400">Способ оплаты</th>
-                    <th className="text-left py-3 px-4 font-medium text-slate-400">Курьер</th>
-                    <th className="text-right py-3 px-4 font-medium text-slate-400">Сумма</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reportData.filteredOrders.map((order) => {
-                    const orderTotal = order.total ?? order.products.reduce(
-                      (sum, product) => sum + product.price * product.amount,
-                      0
-                    );
-
-                    return (
-                      <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="py-3 px-4 text-slate-400">
-                          {format(new Date(order.date), 'd MMM yyyy', { locale: ru })}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400 capitalize">
-                          {order.paymentMethod || '-'}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400">
-                          {order.courier || '-'}
-                        </td>
-
-                        <td className="py-3 px-4 text-slate-400">
-                          {formatCurrency(orderTotal)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {reportData.filteredOrders.length === 0 && (
-        <Card className="border-slate-200">
-          <CardContent className="py-12 text-center">
-            <p className="text-slate-300">
-              Нет завершенных заказов за выбранный период
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

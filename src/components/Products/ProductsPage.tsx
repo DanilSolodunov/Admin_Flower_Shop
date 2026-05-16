@@ -4,7 +4,7 @@ import { ProductTable } from './ProductTable';
 import { ProductForm } from './ProductForm';
 import { Button } from '../ui/button';
 import { Plus } from 'lucide-react';
-import { productApi } from '../../api/api';
+import { productApi } from '../../api/authApi';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 
 export function ProductsPage() {

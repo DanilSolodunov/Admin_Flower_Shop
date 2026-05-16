@@ -111,7 +111,7 @@ export function OrderDetails({
       await orderApi.updateOrder({
         id: order.id,
         status: "собирается",
-        courierId: courierId ?? null,
+        courier: courierId ?? null,
       });
 
       const selectedCourier = couriers.find(

@@ -17,7 +17,7 @@ import { SettingsForm } from './components/Settings/SettingsForm';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
 import { Package, ShoppingCart, CheckCircle, BarChart3, Users } from 'lucide-react';
-import { productApi } from './api/api';
+import { productApi } from './api/productApi';
 import { orderApi } from './api/orderApi';
 import { createCourier, getAllCouriers, updateCourier, deleteCourier } from "./api/courierApi";
 

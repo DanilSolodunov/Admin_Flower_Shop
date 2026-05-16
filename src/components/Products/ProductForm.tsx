@@ -7,7 +7,7 @@ import { Textarea } from '../ui/textarea';
 import { Upload } from 'lucide-react';
 import { validateProduct } from '../../utils/validators';
 import { prepareImageForSave } from '../../utils/imageUtils';
-import { productApi } from '../../api/api';
+import { productApi } from '../../api/productApi';
 import {
   Select,
   SelectTrigger,

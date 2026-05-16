@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { authApi } from "./authApi";
 import { Order } from "../types/Order";
 import { Courier } from "../types/Courier";
 
@@ -22,15 +22,12 @@ export interface OrderResponse {
 export interface UpdateOrderRequest {
   id: number;
   status: string;
-  courierId?: number | null;
+  courier?: Courier | null;
   paymentMethod?: string;
   reason?: string;
 }
 
 export const orderApi = {
-  /*
-    Получить все заказы
-  */
   getAllOrders: async (): Promise<Order[]> => {
     const token = localStorage.getItem("accessToken");
 
@@ -40,7 +37,7 @@ export const orderApi = {
     );
 
     const response =
-      await api.get<OrderResponse[]>("/orders/supplier");
+      await authApi.get<OrderResponse[]>("/orders/supplier");
 
     console.log(
       "С сервера получены заказы:",
@@ -75,14 +72,13 @@ export const orderApi = {
   updateOrder: async ({
     id,
     status,
-    courierId,
+    courier,
     paymentMethod,
     reason,
   }: UpdateOrderRequest): Promise<Order> => {
     const requestBody = {
-      id,
       status,
-      courierId,
+      courier,
       paymentMethod,
       reason,
     };
@@ -93,7 +89,7 @@ export const orderApi = {
     });
 
     try {
-      const response = await api.put(
+      const response = await authApi.put(
         `/orders/supplier/${id}`,
         requestBody
       );
@@ -117,9 +113,6 @@ export const orderApi = {
     }
   },
 
-  /*
-    Для совместимости можно оставить alias
-  */
   closeOrder: async (
     request: UpdateOrderRequest
   ): Promise<Order> => {
