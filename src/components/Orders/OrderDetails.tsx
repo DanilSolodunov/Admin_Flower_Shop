@@ -26,7 +26,7 @@ interface Courier {
   name: string;
   phone: string;
   role?: string;
-  status?: string;
+  status: "Активный" | "Неактивный";
 }
 
 interface OrderDetailsProps {
@@ -111,7 +111,9 @@ export function OrderDetails({
       await orderApi.updateOrder({
         id: order.id,
         status: "собирается",
-        courier: courierId ?? null,
+        courier: courierId
+          ? { id: courierId } as Courier
+          : null,
       });
 
       const selectedCourier = couriers.find(

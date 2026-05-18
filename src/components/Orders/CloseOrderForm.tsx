@@ -51,7 +51,6 @@ export function CloseOrderForm({
   const [status, setStatus] = useState<UIOrderStatus>('не выбран');
   const [paymentMethod, setPaymentMethod] = useState<'Наличный' | 'online'>('Наличный');
 
-  // Храним ID выбранного курьера для работы Select
   const [selectedCourierId, setSelectedCourierId] = useState<number | null>(
     order.courier?.id ?? null
   );
@@ -59,7 +58,6 @@ export function CloseOrderForm({
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Загрузка списка курьеров из локального хранилища
   useEffect(() => {
     const savedCouriers = localStorage.getItem('adminhub_couriers');
     if (savedCouriers) {
@@ -73,7 +71,6 @@ export function CloseOrderForm({
     }
   }, []);
 
-  // Валидация формы
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!reason) newErrors.reason = 'Выберите причину закрытия';
@@ -82,7 +79,6 @@ export function CloseOrderForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Автоматическое обновление статуса в зависимости от причины
   useEffect(() => {
     if (reason) {
       switch (reason) {
@@ -104,14 +100,13 @@ export function CloseOrderForm({
     e.preventDefault();
 
     if (validate()) {
-      // КЛЮЧЕВОЙ МОМЕНТ: Находим объект курьера целиком перед отправкой
       const courierObject = couriers.find((c) => c.id === selectedCourierId) || null;
 
       onClose(
         order.id,
         status as Order['status'],
         paymentMethod,
-        courierObject, // Передаем объект, сервер теперь ждет его
+        courierObject, 
         reason
       );
     }

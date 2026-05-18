@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { OrderDetails } from "../Orders/OrderDetails";
+import { Order } from "../../types/Order";
 import {
   Calendar,
   DollarSign,
@@ -16,7 +18,8 @@ import {
 
 export function RevenueReport() {
   const [period, setPeriod] = useState<PeriodType>("day");
-  const [reportData, setReportData] = useState<RevenueResponse[]>([]);
+  const [reportData, setReportData] =
+    useState<RevenueResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
   const formatCurrency = (amount: number) => {
@@ -45,14 +48,18 @@ export function RevenueReport() {
     loadRevenueData();
   }, [period]);
 
+
   const totalRevenue =
-    reportData.length > 0 ? reportData[0].totalRevenue : 0;
+    reportData?.totalRevenue || 0;
 
   const orderCount =
-    reportData.length > 0 ? reportData[0].count : 0;
+    reportData?.count || 0;
 
   const averageCheck =
-    reportData.length > 0 ? reportData[0].average : 0;
+    reportData?.average || 0;
+
+    const [selectedOrder, setSelectedOrder] =
+  useState<Order | null>(null);
 
   return (
     <div className="space-y-6">
@@ -140,6 +147,62 @@ export function RevenueReport() {
             <p className="text-xs text-slate-200 mt-1">
               На один заказ
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Детализация заказов */}
+        <Card className="bg-slate-950 border border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-white">
+              Детализация заказов
+            </CardTitle>
+
+            <CardDescription className="text-slate-400">
+              Список заказов за период: {period} ({reportData?.orders?.length || 0})
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            {reportData?.orders?.length ? (
+              <div className="space-y-4">
+
+                {/* Заголовок */}
+                <div className="grid grid-cols-4 gap-4 border-b border-slate-700 pb-2 text-sm font-medium text-slate-300">
+                  <div>Дата</div>
+                  <div>Способ оплаты</div>
+                  <div>Курьер</div>
+                  <div>Сумма</div>
+                </div>
+
+                {/* Строки */}
+                {reportData.orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="grid grid-cols-4 gap-4 border-b border-slate-800 pb-3 text-sm text-white"
+                  >
+                    <div>
+                      {new Date(order.date).toLocaleDateString("ru-RU")}
+                    </div>
+
+                    <div>
+                      {order.paymentMethod || "-"}
+                    </div>
+
+                    <div>
+                      {order.courier?.name || "-"}
+                    </div>
+
+                    <div>
+                      {formatCurrency(order.total)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-slate-400">
+                Заказы не найдены
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
