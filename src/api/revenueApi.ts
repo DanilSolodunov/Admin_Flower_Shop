@@ -7,17 +7,6 @@ export type PeriodType =
   | "year"
   | "all";
 
-// export interface RevenueResponse {
-//   totalRevenue: number;
-//   count: number;
-//   average: number;
-//   period: string;
-//   data: string;
-//   payment: string;
-//   courier: string;
-//   total: number;
-// }
-
 export interface OrderResponse {
   id: number;
   date: string;

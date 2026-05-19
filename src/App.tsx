@@ -20,6 +20,7 @@ import { Package, ShoppingCart, CheckCircle, BarChart3, Users } from 'lucide-rea
 import { productApi } from './api/productApi';
 import { orderApi } from './api/orderApi';
 import { createCourier, getAllCouriers, updateCourier, deleteCourier } from "./api/courierApi";
+import { initializeAuth } from "./api/authApi";
 
 const menuItems = [
   { id: 'products' as const, label: 'Товары', icon: Package },
@@ -85,6 +86,33 @@ export default function App() {
 
   const [closingOrder, setClosingOrder] = useState<Order | undefined>(undefined);
   const [isCloseOrderFormOpen, setIsCloseOrderFormOpen] = useState(false);
+
+  useEffect(() => {
+  const init = async () => {
+    const isValid = await initializeAuth();
+
+    if (isValid) {
+      const savedUser = localStorage.getItem("authUser");
+
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+
+        setCurrentUser({
+          id: 0,
+          username: parsedUser.email,
+          password: "",
+          role: parsedUser.role,
+        });
+
+        setIsAuthenticated(true);
+      }
+    } else {
+      setIsAuthenticated(false);
+    }
+  };
+
+  init();
+}, []);
 
   useEffect(() => {
     loadCouriers();
