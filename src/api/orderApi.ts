@@ -37,7 +37,7 @@ export const orderApi = {
     );
 
     const response =
-      await authApi.get<OrderResponse[]>("/orders/supplier");
+      await authApi.get<OrderResponse[]>("/orders");
 
     console.log(
       "С сервера получены заказы:",

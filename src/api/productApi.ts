@@ -7,7 +7,7 @@ const STATIC_BASE_URL = "http://localhost:8080";
 export const productApi = {
   getAllProducts: async () => {
     const response =
-      await authApi.get<Product[]>("/products");
+      await authApi.get<Product[]>("/products/supplier");
 
     return response.data.map((product) => ({
       ...product,
