@@ -5,6 +5,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Trash2, LogOut, MapPin, Plus, Trash, X, Lock, Eye, EyeOff } from 'lucide-react';
 import { addressApi, AddressRequest } from '../../api/addressApi';
+import { phoneApi } from '../../api/phoneApi';
 
 interface SettingsFormProps {
   user: User;
@@ -26,6 +27,12 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel, onLogout }: S
     confirmPassword: '',
   });
 
+  const [phone, setPhone] = useState<string | null>(null);
+  const [phoneForm, setPhoneForm] = useState({
+    phone: '',
+  });
+  const [isLoadingPhone, setIsLoadingPhone] = useState(true);
+
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -46,6 +53,7 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel, onLogout }: S
 
   useEffect(() => {
     loadAddress();
+    loadPhone();
   }, []);
 
   const loadAddress = async () => {
@@ -57,6 +65,18 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel, onLogout }: S
       console.error('Ошибка при загрузке адреса:', err);
     } finally {
       setIsLoadingAddress(false);
+    }
+  };
+
+  const loadPhone = async () => {
+    try {
+      setIsLoadingPhone(true);
+      const data = await phoneApi.getPhone();
+      setPhone(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingPhone(false);
     }
   };
 
@@ -101,9 +121,6 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel, onLogout }: S
       setPasswordError('Заполните все поля');
       return;
     }
-
-    // TODO: отправить запрос на сервер для смены пароля
-    console.log('Смена пароля:', { oldPassword: passwordForm.oldPassword, newPassword: passwordForm.newPassword });
 
     setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
   };
@@ -186,6 +203,46 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel, onLogout }: S
               </Button>
             </form>
           </>
+        )}
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold mb-4">
+          Номер телефона
+        </h3>
+
+        {isLoadingPhone ? (
+          <p>Загрузка...</p>
+        ) : phone ? (
+          <div className="flex justify-between items-center p-4 bg-slate-50 rounded-lg">
+            <span>{phone}</span>
+          </div>
+        ) : (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+
+              await phoneApi.savePhone(phoneForm.phone);
+
+              setPhone(phoneForm.phone);
+              setPhoneForm({ phone: "" });
+            }}
+            className="space-y-3"
+          >
+            <Input
+              value={phoneForm.phone}
+              onChange={(e) =>
+                setPhoneForm({
+                  phone: e.target.value,
+                })
+              }
+              placeholder="+7 (999) 123-45-67"
+            />
+
+            <Button type="submit">
+              Сохранить
+            </Button>
+          </form>
         )}
       </div>
 

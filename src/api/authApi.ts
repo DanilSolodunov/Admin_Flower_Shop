@@ -1,5 +1,6 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { tokenService } from "./api";
 
 interface JwtPayload {
   exp: number;
@@ -28,7 +29,7 @@ const isTokenExpired = (token: string): boolean => {
 };
 
 authApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  const token = tokenService.getAccessToken();
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -83,6 +84,23 @@ const refreshAccessToken = async (): Promise<string> => {
 
   return data.accessToken;
 };
+
+
+authApi.interceptors.request.use((config) => {
+
+  const token =
+    // localStorage.getItem("accessToken");
+    tokenService.getAccessToken();
+
+  console.log("TOKEN =", token);
+
+  if (token) {
+    config.headers.Authorization =
+      `Bearer ${token}`;
+  }
+
+  return config;
+});
 
 authApi.interceptors.response.use(
   (response) => response,
@@ -143,10 +161,10 @@ authApi.interceptors.response.use(
 export const initializeAuth = async (): Promise<boolean> => {
   try {
     const accessToken =
-      localStorage.getItem("accessToken");
+      tokenService.getAccessToken();
 
     const refreshToken =
-      localStorage.getItem("refreshToken");
+      tokenService.getRefreshToken();
 
     if (!refreshToken) {
       return false;

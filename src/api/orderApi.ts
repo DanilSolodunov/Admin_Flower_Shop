@@ -83,14 +83,9 @@ export const orderApi = {
       reason,
     };
 
-    console.log("Отправляем запрос:", {
-      url: `/orders/supplier/${id}`,
-      body: requestBody,
-    });
-
     try {
       const response = await authApi.put(
-        `/orders/supplier/${id}`,
+        `/orders/updateOrder/${id}`,
         requestBody
       );
 

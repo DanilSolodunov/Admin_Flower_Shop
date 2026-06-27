@@ -40,12 +40,11 @@ export default function App() {
     return [{ id: 1, username: 'admin', password: 'admin123', name: 'Администратор', role: 'admin' }];
   });
 
+  const [authLoading, setAuthLoading] =
+    useState(true);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
-
-  useEffect(() => {
-    loadProducts();
-  }, []);
 
   const loadProducts = async () => {
     try {
@@ -61,10 +60,6 @@ export default function App() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
-
-  useEffect(() => {
-    loadOrders();
-  }, []);
 
   const loadOrders = async () => {
     try {
@@ -88,35 +83,59 @@ export default function App() {
   const [isCloseOrderFormOpen, setIsCloseOrderFormOpen] = useState(false);
 
   useEffect(() => {
-  const init = async () => {
-    const isValid = await initializeAuth();
+    const init = async () => {
+      try {
 
-    if (isValid) {
-      const savedUser = localStorage.getItem("authUser");
+        const isValid =
+          await initializeAuth();
 
-      if (savedUser) {
-        const parsedUser = JSON.parse(savedUser);
+        if (isValid) {
 
-        setCurrentUser({
-          id: 0,
-          username: parsedUser.email,
-          password: "",
-          role: parsedUser.role,
-        });
+          const savedUser =
+            localStorage.getItem("authUser");
 
-        setIsAuthenticated(true);
+          if (savedUser) {
+
+            const parsedUser =
+              JSON.parse(savedUser);
+
+            setCurrentUser({
+              id: 0,
+              username: parsedUser.email,
+              password: "",
+              role: parsedUser.role,
+            });
+
+            setIsAuthenticated(true);
+          }
+
+        } else {
+
+          setIsAuthenticated(false);
+
+        }
+
+      } finally {
+
+        setAuthLoading(false);
+
       }
-    } else {
-      setIsAuthenticated(false);
-    }
-  };
+    };
 
-  init();
-}, []);
+    init();
+  }, []);
+
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    loadProducts();
+    loadOrders();
     loadCouriers();
-  }, []);
+
+  }, [isAuthenticated]);
 
   const loadCouriers = async () => {
     try {
@@ -199,34 +218,16 @@ export default function App() {
 
   const [isCourierFormOpen, setIsCourierFormOpen] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const savedUser = localStorage.getItem('authUser');
-
-    if (token && savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-
-      setCurrentUser({
-        id: 0,
-        username: parsedUser.email,
-        password: '',
-        role: parsedUser.role,
-      });
-
-      setIsAuthenticated(true);
-    }
-  }, []);
-
   useEffect(() => { localStorage.setItem('adminhub_users', JSON.stringify(users)); }, [users]);
   useEffect(() => { localStorage.setItem('adminhub_couriers', JSON.stringify(couriers)); }, [couriers]);
 
-  useEffect(() => {
-    const savedAuth = localStorage.getItem('adminhub_auth');
-    if (savedAuth) {
-      setCurrentUser(JSON.parse(savedAuth));
-      setIsAuthenticated(true);
-    }
-  }, []);
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Загрузка...
+      </div>
+    );
+  }
 
   if (!isAuthenticated)
     return (
@@ -462,7 +463,7 @@ export default function App() {
                 );
                 await loadOrders();
               }}
-              onClose={() => setIsOrderDetailsOpen(false)}            />
+              onClose={() => setIsOrderDetailsOpen(false)} />
           )}
         </DialogContent>
       </Dialog>
