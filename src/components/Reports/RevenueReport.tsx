@@ -4,6 +4,7 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { OrderDetails } from "../Orders/OrderDetails";
 import { Order } from "../../types/Order";
 import { Button } from "../ui/button";
+import { DebtorsModal } from "../Debtors/DebtorsModal";
 import {
   Calendar,
   DollarSign,
@@ -62,6 +63,8 @@ export function RevenueReport() {
   const [selectedOrder, setSelectedOrder] =
     useState<Order | null>(null);
 
+  const [isDebtorsModalOpen, setIsDebtorsModalOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       {/* Выбор периода */}
@@ -90,12 +93,14 @@ export function RevenueReport() {
             </div>
             <Button
               className="bg-red-600 text-white hover:bg-red-700 border border-red-500"
-              onClick={() => {
-                console.log("Нажата красная кнопка");
-              }}
+              onClick={() => setIsDebtorsModalOpen(true)}
             >
               Должники
             </Button>
+            <DebtorsModal
+              isOpen={isDebtorsModalOpen}
+              onClose={() => setIsDebtorsModalOpen(false)}
+            />
           </RadioGroup>
         </CardContent>
       </Card>
