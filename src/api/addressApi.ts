@@ -1,4 +1,4 @@
-import { authApi } from "./authApi";
+import { api } from "./api";
 
 export interface Address {
   id: number;
@@ -14,19 +14,27 @@ export interface AddressRequest {
 }
 
 export const addressApi = {
-  // Получить адрес (сервер возвращает одну строку)
+  // Получить адрес поставщика
   getAddress: async (): Promise<string | null> => {
-    const response = await authApi.get<string>("/settings/supplierAddress");
+    const response = await api.get<string | null>(
+      "/settings/supplierAddress"
+    );
+
     return response.data || null;
   },
 
-  // Добавить/обновить адрес
-  setAddress: async (request: AddressRequest): Promise<void> => {
-    await authApi.post("/settings/supplierAddress", request);
+  // Добавить или изменить адрес поставщика
+  setAddress: async (
+    request: AddressRequest
+  ): Promise<void> => {
+    await api.post(
+      "/settings/supplierAddress",
+      request
+    );
   },
 
-  // Удалить адрес
+  // Удалить адрес поставщика
   deleteAddress: async (): Promise<void> => {
-    await authApi.delete("/settings/supplierAddress");
+    await api.delete("/settings/supplierAddress");
   },
 };

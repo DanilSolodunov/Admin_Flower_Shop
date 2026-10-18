@@ -1,4 +1,4 @@
-import { authApi } from "./authApi";
+import { api } from "./api";
 import { Order } from "../types/Order";
 import { Courier } from "../types/Courier";
 
@@ -9,6 +9,7 @@ export interface OrderResponse {
   total: number;
   address: string;
   courier: Courier | null;
+  paymentMethod: string;
   items: {
     productId: number;
     name: string;
@@ -37,7 +38,7 @@ export const orderApi = {
     );
 
     const response =
-      await authApi.get<OrderResponse[]>("/orders");
+      await api.get<OrderResponse[]>("/orders");
 
     console.log(
       "С сервера получены заказы:",
@@ -50,7 +51,7 @@ export const orderApi = {
       status: order.status,
       total: order.total,
       courier: order.courier ?? null,
-      paymentMethod: null,
+      paymentMethod: order.paymentMethod ?? null,
       address: order.address,
       reason: undefined,
 
@@ -84,7 +85,7 @@ export const orderApi = {
     };
 
     try {
-      const response = await authApi.put(
+      const response = await api.put(
         `/orders/updateOrder/${id}`,
         requestBody
       );

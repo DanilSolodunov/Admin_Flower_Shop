@@ -20,7 +20,7 @@ import { Package, ShoppingCart, CheckCircle, BarChart3, Users } from 'lucide-rea
 import { productApi } from './api/productApi';
 import { orderApi } from './api/orderApi';
 import { createCourier, getAllCouriers, updateCourier, deleteCourier } from "./api/courierApi";
-import { initializeAuth } from "./api/authApi";
+import { initializeAuth } from "./api/api";
 
 const menuItems = [
   { id: 'products' as const, label: 'Товары', icon: Package },
@@ -36,8 +36,39 @@ export default function App() {
 
   const [users, setUsers] = useState<User[]>(() => {
     const saved = localStorage.getItem('adminhub_users');
-    if (saved) return JSON.parse(saved);
-    return [{ id: 1, username: 'admin', password: 'admin123', name: 'Администратор', role: 'admin' }];
+    // if (saved) return JSON.parse(saved);
+    // return [{ id: 1, username: 'admin', password: 'admin123', name: 'Администратор', role: 'admin' }];
+     try {
+    const saved = localStorage.getItem("adminhub_users");
+
+    if (!saved) {
+      return [
+        {
+          id: 1,
+          username: "admin",
+          password: "admin123",
+          name: "Администратор",
+          role: "ADMIN",
+        },
+      ];
+    }
+
+    return JSON.parse(saved);
+  } catch (error) {
+    console.error("Ошибка чтения adminhub_users:", error);
+
+    localStorage.removeItem("adminhub_users");
+
+    return [
+      {
+        id: 1,
+        username: "admin",
+        password: "admin123",
+        name: "Администратор",
+        role: "ADMIN",
+      },
+    ];
+  }
   });
 
   const [authLoading, setAuthLoading] =
@@ -83,47 +114,51 @@ export default function App() {
   const [isCloseOrderFormOpen, setIsCloseOrderFormOpen] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      try {
+  const init = async () => {
+    try {
+      const isValid = await initializeAuth();
 
-        const isValid =
-          await initializeAuth();
-
-        if (isValid) {
-
-          const savedUser =
-            localStorage.getItem("authUser");
-
-          if (savedUser) {
-
-            const parsedUser =
-              JSON.parse(savedUser);
-
-            setCurrentUser({
-              id: 0,
-              username: parsedUser.email,
-              password: "",
-              role: parsedUser.role,
-            });
-
-            setIsAuthenticated(true);
-          }
-
-        } else {
-
-          setIsAuthenticated(false);
-
-        }
-
-      } finally {
-
-        setAuthLoading(false);
-
+      if (!isValid) {
+        setIsAuthenticated(false);
+        return;
       }
-    };
 
-    init();
-  }, []);
+      const savedUser =
+        localStorage.getItem("authUser");
+
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+
+        setCurrentUser({
+          id: 0,
+          username: parsedUser.email,
+          password: "",
+          // name: parsedUser.name ?? "",
+          role: parsedUser.role ?? "ADMIN",
+        });
+
+        setIsAuthenticated(true);
+      } else {
+        // Токен есть, но пользователя нет.
+        // Временно считаем авторизацию валидной.
+        setIsAuthenticated(true);
+      }
+
+    } catch (error) {
+      console.error(
+        "Application initialization error:",
+        error
+      );
+
+      setIsAuthenticated(false);
+
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  init();
+}, []);
 
 
   useEffect(() => {

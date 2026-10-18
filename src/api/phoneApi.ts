@@ -1,36 +1,19 @@
-import axios from "axios";
-import { tokenService } from "./api";
-
-const API_URL = "http://localhost:8080/api";
+import { api } from "./api";
 
 export const phoneApi = {
+  getPhone: async () => {
+    return api.get("/settings/phone").then((response) => response.data);
+  },
 
-    getPhone: async () => {
-        const token = tokenService.getAccessToken();
-
-        const response = await axios.get(`${API_URL}/settings/phone`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        return response.data;
-    },
-
-    savePhone: async (phone: string) => {
-        const token = tokenService.getAccessToken();
-
-        await axios.post(
-            `${API_URL}/settings/phone`,
-            null,
-            {
-                params: {
-                    phone,
-                },
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
-    },
+  savePhone: async (phone: string) => {
+    await api.post(
+      "/settings/phone",
+      null,
+      {
+        params: {
+          phone,
+        },
+      }
+    );
+  },
 };

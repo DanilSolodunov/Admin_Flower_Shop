@@ -1,190 +1,96 @@
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import { tokenService } from "./api";
+export const API_URL =
+  "http://localhost:8080";
 
-interface JwtPayload {
-  exp: number;
-  sub?: string;
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
   role?: string;
 }
 
-export const authApi = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
+export interface RegisterResponse {
+  message: string;
+}
 
-const isTokenExpired = (token: string): boolean => {
-  try {
-    const decoded = jwtDecode<JwtPayload>(token);
+export async function loginUser(
+  email: string,
+  password: string,
+  role: string = "ADMIN"
+): Promise<LoginResponse> {
 
-    if (!decoded.exp) {
-      return true;
-    }
-
-    const currentTime = Date.now() / 1000;
-
-    return decoded.exp < currentTime + 60;
-  } catch (error) {
-    return true;
-  }
-};
-
-authApi.interceptors.request.use((config) => {
-  const token = tokenService.getAccessToken();
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
-
-let isRefreshing = false;
-let failedQueue: any[] = [];
-
-const processQueue = (
-  error: any,
-  token: string | null = null
-) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-
-  failedQueue = [];
-};
-
-const refreshAccessToken = async (): Promise<string> => {
-  const refreshToken = localStorage.getItem("refreshToken");
-
-  if (!refreshToken) {
-    throw new Error("Refresh token not found");
-  }
-
-  const { data } = await axios.post(
-    "http://localhost:8080/api/auth/refresh",
+  const response = await fetch(
+    `${API_URL}/api/auth/login`,
     {
-      refreshToken,
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        email,
+        password,
+        role,
+      }),
     }
   );
 
-  localStorage.setItem(
-    "accessToken",
-    data.accessToken
-  );
 
-  if (data.refreshToken) {
-    localStorage.setItem(
-      "refreshToken",
-      data.refreshToken
+  if (!response.ok) {
+    const errorData =
+      await response.json();
+
+    throw new Error(
+      errorData.message ||
+      "Ошибка при логине"
     );
   }
 
-  return data.accessToken;
-};
+  const data =
+    await response.json();
 
+  console.log(
+    "Backend login response:",
+    data
+  );
 
-authApi.interceptors.request.use((config) => {
+  return data;
+}
 
-  const token =
-    // localStorage.getItem("accessToken");
-    tokenService.getAccessToken();
+export async function registerUser(
+  name: string,
+  email: string,
+  password: string,
+  role: string = "ADMIN"
+): Promise<RegisterResponse> {
 
-  console.log("TOKEN =", token);
+  const response = await fetch(
+    `${API_URL}/api/auth/register`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
 
-  if (token) {
-    config.headers.Authorization =
-      `Bearer ${token}`;
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        role,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+
+    const errorData =
+      await response.json();
+
+    throw new Error(
+      errorData.message ||
+      "Ошибка при регистрации"
+    );
   }
 
-  return config;
-});
-
-authApi.interceptors.response.use(
-  (response) => response,
-
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({
-            resolve,
-            reject,
-          });
-        }).then((token) => {
-          originalRequest.headers.Authorization =
-            `Bearer ${token}`;
-
-          return authApi(originalRequest);
-        });
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        const newAccessToken =
-          await refreshAccessToken();
-
-        processQueue(null, newAccessToken);
-
-        originalRequest.headers.Authorization =
-          `Bearer ${newAccessToken}`;
-
-        return authApi(originalRequest);
-      } catch (err) {
-        processQueue(err, null);
-
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("authUser");
-
-        window.location.href = "/";
-
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
-export const initializeAuth = async (): Promise<boolean> => {
-  try {
-    const accessToken =
-      tokenService.getAccessToken();
-
-    const refreshToken =
-      tokenService.getRefreshToken();
-
-    if (!refreshToken) {
-      return false;
-    }
-
-    if (
-      accessToken &&
-      !isTokenExpired(accessToken)
-    ) {
-      return true;
-    }
-
-    await refreshAccessToken();
-
-    return true;
-  } catch (error) {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("authUser");
-
-    return false;
-  }
-};
+  return response.json();
+}

@@ -16,7 +16,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'default',
   size = 'md',
   className,
-  type = 'button',
+  type,
   ...props
 }) => {
   const baseClasses =

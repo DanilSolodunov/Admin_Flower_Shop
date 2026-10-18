@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Trash2, LogOut, MapPin, Plus, Trash, X, Lock, Eye, EyeOff } from 'lucide-react';
-import { addressApi, AddressRequest } from '../../api/addressApi';
+import { addressApi, Address } from '../../api/addressApi';
 import { phoneApi } from '../../api/phoneApi';
 
 interface SettingsFormProps {
@@ -85,7 +85,7 @@ export function SettingsForm({ user, onUpdate, onDelete, onCancel, onLogout }: S
     if (!addressForm.city.trim() || !addressForm.street.trim() || !addressForm.houseNumber.trim()) return;
 
     try {
-      const request: AddressRequest = {
+      const request: Address = {
         city: addressForm.city,
         street: addressForm.street,
         houseNumber: addressForm.houseNumber,

@@ -1,4 +1,4 @@
-import { authApi } from "./authApi";
+import { api } from "./api";
 
 export type PeriodType =
   | "day"
@@ -32,7 +32,7 @@ export interface RevenueResponse {
 export const getRevenueReport = async (
   period: PeriodType
 ): Promise<RevenueResponse> => {
-  const response = await authApi.get(
+  const response = await api.get(
     "/orders/revenue",
     {
       params: {

@@ -1,13 +1,12 @@
-import axios from "axios";
 import { Product } from "../types/Product";
-import { authApi } from "./authApi";
+import { api } from "./api";
 
 const STATIC_BASE_URL = "http://localhost:8080";
 
 export const productApi = {
   getAllProducts: async () => {
     const response =
-      await authApi.get<Product[]>("/products/supplier");
+      await api.get<Product[]>("/products/supplier");
 
     return response.data.map((product) => ({
       ...product,
@@ -21,7 +20,7 @@ export const productApi = {
 
   getProductById: async (id: number) => {
     const response =
-      await authApi.get<Product>(
+      await api.get<Product>(
         "/products/id",
         {
           params: { id },
@@ -45,7 +44,7 @@ export const productApi = {
     category: string
   ) => {
     const response =
-      await authApi.get<Product[]>(
+      await api.get<Product[]>(
         `/products/category/${category}`
       );
 
@@ -61,7 +60,7 @@ export const productApi = {
 
   searchProducts: async (keyword: string) => {
     const response =
-      await authApi.get<Product[]>(
+      await api.get<Product[]>(
         "/products/search",
         {
           params: { keyword },
@@ -80,7 +79,7 @@ export const productApi = {
 
   getCategories: async () => {
     const response =
-      await authApi.get<string[]>(
+      await api.get<string[]>(
         "/products/categories"
       );
 
@@ -92,7 +91,7 @@ export const productApi = {
     formData.append("image", image);
 
     const response =
-      await authApi.post<string>(
+      await api.post<string>(
         "/products/upload",
         formData,
         {
@@ -106,38 +105,26 @@ export const productApi = {
     return response.data;
   },
 
-  addProduct: async (formData: FormData) => {
-    const response =
-      await authApi.post<Product>(
-        "/products/addproduct",
-        formData,
-        {
-          headers: {
-            "Content-Type":
-              "multipart/form-data",
-          },
-        }
-      );
+addProduct: async (formData: FormData): Promise<Product> => {
+
+  try {
+    const response = await api.post<Product>(
+      '/products/addproduct',
+      formData
+    );
 
     return response.data;
-  },
+  } catch (error) {
+    throw error;
+  }
+},
 
-  updateProduct: async (
-    id: number,
-    formData: FormData
-  ) => {
-    const response =
-      await authApi.put<Product>(
-        `/products/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type":
-              "multipart/form-data",
-          },
-        }
-      );
+updateProduct: async (id: number, formData: FormData): Promise<Product> => {
+  const response = await api.put<Product>(
+    `/products/${id}`,
+    formData
+  );
 
-    return response.data;
-  },
+  return response.data;
+},
 };

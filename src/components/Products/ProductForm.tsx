@@ -5,7 +5,6 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Upload } from 'lucide-react';
-import { validateProduct } from '../../utils/validators';
 import { prepareImageForSave } from '../../utils/imageUtils';
 import { productApi } from '../../api/productApi';
 import {
@@ -63,55 +62,19 @@ export function ProductForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (isNewProduct && !selectedImageFile) {
-      setErrors({
-        image: 'Выберите изображение',
-      });
-      return;
-    }
-
-    const validation = validateProduct({
-      image: 'valid',
-      name: formData.name,
-      description: formData.description,
-      price: Number(formData.price),
-      amount: Number(formData.amount),
-      category: formData.category,
-    });
-
-    if (!validation.isValid) {
-      setErrors(validation.errors);
-      return;
-    }
-
     setIsSubmitting(true);
+    setErrors({});
 
     try {
       const formDataToSend = new FormData();
-
-      if (formData.name) {
-        formDataToSend.append('name', formData.name);
-      }
-
-      if (formData.description) {
-        formDataToSend.append('description', formData.description);
-      }
-
-      if (formData.price) {
-        formDataToSend.append('price', formData.price);
-      }
-
-      if (formData.amount) {
-        formDataToSend.append('amount', formData.amount);
-      }
-
-      if (formData.category) {
-        formDataToSend.append('category', formData.category);
-      }
+      formDataToSend.append("name", formData.name || "Без названия");
+      formDataToSend.append("description", formData.description || "");
+      formDataToSend.append("price", String(formData.price || 0));
+      formDataToSend.append("amount", String(formData.amount || 0));
+      formDataToSend.append("category", formData.category || "");
 
       if (selectedImageFile) {
-        formDataToSend.append('file', selectedImageFile);
+        formDataToSend.append("file", selectedImageFile);
       }
 
       if (product) {
@@ -122,10 +85,8 @@ export function ProductForm({
 
       onSave();
     } catch (error) {
-      console.error(error);
-
       setErrors({
-        submit: 'Не удалось сохранить товар',
+        submit: "Не удалось сохранить товар. Проверьте консоль.",
       });
     } finally {
       setIsSubmitting(false);
@@ -205,7 +166,6 @@ export function ProductForm({
           )}
         </div>
 
-        {/* NAME */}
         <div className="space-y-3">
           <Label htmlFor="name">Название *</Label>
 
@@ -218,7 +178,6 @@ export function ProductForm({
           />
         </div>
 
-        {/* CATEGORY */}
         <div className="space-y-3">
           <Label htmlFor="category">Категория *</Label>
 
@@ -245,7 +204,6 @@ export function ProductForm({
           </Select>
         </div>
 
-        {/* DESCRIPTION */}
         <div className="space-y-3">
           <Label htmlFor="description">Описание *</Label>
 
@@ -259,12 +217,10 @@ export function ProductForm({
           />
         </div>
 
-        {/* PRICE + AMOUNT */}
         <div className="grid grid-cols-2 gap-4">
 
           <div className="space-y-3">
             <Label htmlFor="price">Цена</Label>
-
             <Input
               id="price"
               type="number"
@@ -279,7 +235,6 @@ export function ProductForm({
 
           <div className="space-y-3">
             <Label htmlFor="amount">Количество</Label>
-
             <Input
               id="amount"
               type="number"
@@ -294,9 +249,7 @@ export function ProductForm({
 
         </div>
 
-        {/* BUTTONS */}
         <div className="flex justify-end gap-2 pt-4">
-
           <Button
             type="button"
             variant="outline"
@@ -305,7 +258,6 @@ export function ProductForm({
           >
             Отмена
           </Button>
-
           <Button
             type="submit"
             disabled={isSubmitting}
@@ -317,7 +269,6 @@ export function ProductForm({
                 ? 'Сохранить'
                 : 'Добавить'}
           </Button>
-
         </div>
       </form>
     </div>

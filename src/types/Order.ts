@@ -6,7 +6,7 @@ export interface Order {
   total: number;
   status: string;
   date: string;
-  paymentMethod: 'Наличный' | 'online' | null;
+  paymentMethod: string;
 
   courier: {
     id: number;

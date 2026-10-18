@@ -9,7 +9,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '../ui/select';
 import {
   User,
@@ -285,6 +284,8 @@ export function OrderDetails({
               {(order.total ?? 0).toLocaleString()} ₽
             </span>
           </div>
+
+
         </CardContent>
       </Card>
 
