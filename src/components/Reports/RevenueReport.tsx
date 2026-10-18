@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { OrderDetails } from "../Orders/OrderDetails";
 import { Order } from "../../types/Order";
+import { Button } from "../ui/button";
 import {
   Calendar,
   DollarSign,
@@ -58,8 +59,8 @@ export function RevenueReport() {
   const averageCheck =
     reportData?.average || 0;
 
-    const [selectedOrder, setSelectedOrder] =
-  useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] =
+    useState<Order | null>(null);
 
   return (
     <div className="space-y-6">
@@ -87,6 +88,14 @@ export function RevenueReport() {
               <RadioGroupItem value="year">Год</RadioGroupItem>
               <RadioGroupItem value="all">Все время</RadioGroupItem>
             </div>
+            <Button
+              className="bg-red-600 text-white hover:bg-red-700 border border-red-500"
+              onClick={() => {
+                console.log("Нажата красная кнопка");
+              }}
+            >
+              Должники
+            </Button>
           </RadioGroup>
         </CardContent>
       </Card>

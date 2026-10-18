@@ -218,35 +218,33 @@ export function ProductForm({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-
-          <div className="space-y-3">
-            <Label htmlFor="price">Цена</Label>
+          <div className="flex flex-col space-y-2">
+            <Label htmlFor="price" className="block text-sm font-medium">
+              Цена
+            </Label>
             <Input
               id="price"
               type="number"
               min={0}
               max={9000}
               value={formData.price}
-              onChange={(e) =>
-                handleChange('price', e.target.value)
-              }
+              onChange={(e) => handleChange('price', e.target.value)}
             />
           </div>
 
-          <div className="space-y-3">
-            <Label htmlFor="amount">Количество</Label>
+          <div className="flex flex-col space-y-2">
+            <Label htmlFor="amount" className="block text-sm font-medium">
+              Количество
+            </Label>
             <Input
               id="amount"
               type="number"
               min={0}
               max={9000}
               value={formData.amount}
-              onChange={(e) =>
-                handleChange('amount', e.target.value)
-              }
+              onChange={(e) => handleChange('amount', e.target.value)}
             />
           </div>
-
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
