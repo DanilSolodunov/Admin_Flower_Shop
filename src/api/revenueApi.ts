@@ -29,6 +29,12 @@ export interface RevenueResponse {
   orders: OrderResponse[];
 }
 
+export interface DebtorsResponse {
+  debtor_id: number;
+  debtor_name: string;
+  debtor_amount: number;
+}
+
 export const getRevenueReport = async (
   period: PeriodType
 ): Promise<RevenueResponse> => {
@@ -41,5 +47,13 @@ export const getRevenueReport = async (
     }
   );
 
+  return response.data;
+};
+
+export const getDebtorsReport = async () => {
+  const response =
+  await api.get<DebtorsResponse[]>(
+    `/orders/debtors`
+  ); 
   return response.data;
 };
