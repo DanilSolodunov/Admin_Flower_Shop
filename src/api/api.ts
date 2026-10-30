@@ -21,9 +21,6 @@ const API_URL = "http://localhost:8080/api";
 
 export const api = axios.create({
   baseURL: API_URL,
-  // headers: {
-  //   "Content-Type": "application/json",
-  // },
 });
 
 const isTokenExpired = (token: string): boolean => {
@@ -36,7 +33,6 @@ const isTokenExpired = (token: string): boolean => {
 
     const currentTime = Date.now() / 1000;
 
-    // Обновляем токен за 60 секунд до истечения
     return decoded.exp <= currentTime + 60;
   } catch (error) {
     console.error("Ошибка декодирования JWT:", error);

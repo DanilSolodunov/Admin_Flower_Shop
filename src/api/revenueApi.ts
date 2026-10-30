@@ -57,3 +57,11 @@ export const getDebtorsReport = async () => {
   ); 
   return response.data;
 };
+
+export const closeDebtorOrder = async () => {
+  const response = 
+  await api.post<number>(
+    '/orders/debtors/${id}/payments'
+  );
+  return response.data;
+}

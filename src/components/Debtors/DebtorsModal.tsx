@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X, Users, AlertCircle } from "lucide-react";
+import PayDebtDialog from "./PayDebtDialog";
 
 import {
   Table,
@@ -32,6 +33,11 @@ export const DebtorsModal: React.FC<DebtorsModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+
+  const [selectedDebtor, setSelectedDebtor] = useState<Debtor | null>(null);
+
+  const [isPayDialogOpen, setIsPayDialogOpen] = useState(false);
+  
 
   useEffect(() => {
     if (!isOpen) {
@@ -95,9 +101,33 @@ export const DebtorsModal: React.FC<DebtorsModalProps> = ({
     return null;
   }
 
+  const handleDebtorClick = (debtor: Debtor) => {
+    setSelectedDebtor(debtor);
+    setIsPayDialogOpen(true);
+  };
+
+  const handlePayDebt = async (debtorId: number, amount: number) => {
+    // Здесь будет API-запрос на погашение долга.
+    console.log("Погашение долга:", {
+      debtorId,
+      amount,
+    });
+
+    // После успешной оплаты обновляем список.
+    const data = await getDebtorsReport();
+
+    setDebtors(
+      data.map((debtor) => ({
+        id: debtor.debtor_id,
+        name: debtor.debtor_name,
+        debtAmount: debtor.debtor_amount,
+      }))
+    );
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -238,17 +268,24 @@ export const DebtorsModal: React.FC<DebtorsModalProps> = ({
                 </TableRow>
               ) : debtors.length > 0 ? (
                 debtors.map((debtor) => (
-                  <TableRow key={debtor.id} theme="dark">
+                  // <TableRow key={debtor.id} theme="dark">
+                  <TableRow
+                    key={debtor.id}
+                    theme="dark"
+                    className="transition-colors hover:bg-slate-700/60"
+                  >
                     <TableCell
                       theme="dark"
-                      className="font-medium text-white"
+                      className="font-medium text-white cursor-pointer"
+                      onClick={() => handleDebtorClick(debtor)}
                     >
                       {debtor.name}
                     </TableCell>
 
                     <TableCell
                       theme="dark"
-                      className="font-semibold text-red-400"
+                      className="font-semibold text-red-400 cursor-pointer"
+                      onClick={() => handleDebtorClick(debtor)}
                     >
                       {formatMoney(debtor.debtAmount)}
                     </TableCell>
@@ -274,6 +311,16 @@ export const DebtorsModal: React.FC<DebtorsModalProps> = ({
             </TableBody>
           </Table>
         </div>
+
+        <PayDebtDialog
+          open={isPayDialogOpen}
+          onClose={() => {
+            setIsPayDialogOpen(false);
+            setSelectedDebtor(null);
+          }}
+          debtor={selectedDebtor}
+          onSubmit={handlePayDebt}
+        />
 
         {/* Нижняя часть окна */}
         <div className="mt-6 flex justify-end">
