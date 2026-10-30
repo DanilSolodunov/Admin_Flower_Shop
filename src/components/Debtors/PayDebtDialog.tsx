@@ -18,7 +18,7 @@ interface PayDebtDialogProps {
     name: string;
     debtAmount: number;
   } | null;
-  onSubmit: (debtorId: number, amount: number) => Promise<void>;
+  onSubmit: (orderId: number, amount: number) => Promise<void>;
 }
 
 export const PayDebtDialog: React.FC<PayDebtDialogProps> = ({

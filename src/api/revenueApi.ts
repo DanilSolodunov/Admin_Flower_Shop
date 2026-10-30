@@ -52,16 +52,25 @@ export const getRevenueReport = async (
 
 export const getDebtorsReport = async () => {
   const response =
-  await api.get<DebtorsResponse[]>(
-    `/orders/debtors`
-  ); 
+    await api.get<DebtorsResponse[]>(
+      `/orders/debtors`
+    );
   return response.data;
 };
 
-export const closeDebtorOrder = async () => {
-  const response = 
-  await api.post<number>(
-    '/orders/debtors/${id}/payments'
+export const closeDebtorOrder = async (
+  orderId: number,
+  amount: number
+): Promise<DebtorsResponse> => {
+  const response = await api.post<DebtorsResponse>(
+    `/orders/debtors/${orderId}/payments`,
+    { amount },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
   );
+
   return response.data;
-}
+};

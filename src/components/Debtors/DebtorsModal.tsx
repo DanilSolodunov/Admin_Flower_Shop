@@ -11,7 +11,7 @@ import {
   TableCell,
 } from "../ui/table";
 
-import { getDebtorsReport } from "../../api/revenueApi";
+import { getDebtorsReport, closeDebtorOrder } from "../../api/revenueApi";
 
 interface Debtor {
   id: number;
@@ -37,7 +37,7 @@ export const DebtorsModal: React.FC<DebtorsModalProps> = ({
   const [selectedDebtor, setSelectedDebtor] = useState<Debtor | null>(null);
 
   const [isPayDialogOpen, setIsPayDialogOpen] = useState(false);
-  
+
 
   useEffect(() => {
     if (!isOpen) {
@@ -107,22 +107,28 @@ export const DebtorsModal: React.FC<DebtorsModalProps> = ({
   };
 
   const handlePayDebt = async (debtorId: number, amount: number) => {
-    // Здесь будет API-запрос на погашение долга.
-    console.log("Погашение долга:", {
-      debtorId,
-      amount,
-    });
+    try {
+      console.log("Отправка платежа:", {
+        debtorId,
+        amount,
+      });
 
-    // После успешной оплаты обновляем список.
-    const data = await getDebtorsReport();
+      const response = await closeDebtorOrder(debtorId, amount);
 
-    setDebtors(
-      data.map((debtor) => ({
-        id: debtor.debtor_id,
-        name: debtor.debtor_name,
-        debtAmount: debtor.debtor_amount,
-      }))
-    );
+      console.log("Ответ сервера:", response);
+
+      const data = await getDebtorsReport();
+      setDebtors(
+        data.map((debtor) => ({
+          id: debtor.debtor_id,
+          name: debtor.debtor_name,
+          debtAmount: debtor.debtor_amount,
+        }))
+      );
+    } catch (error) {
+      console.error("Ошибка погашения долга:", error);
+      throw error;
+    }
   };
 
   return (
